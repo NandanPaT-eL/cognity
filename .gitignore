@@ -1,0 +1,91 @@
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ─── Build outputs ────────────────────────────────────────────────────────────
+dist/
+.next/
+out/
+build/
+.vercel/
+.output/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# ─── Environment & secrets ────────────────────────────────────────────────────
+# Never commit real env files — only .env.example is safe to commit
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env*.local
+
+# Dashboard-specific env
+apps/dashboard/.env.local
+apps/dashboard/.env*.local
+
+# ─── Monorepo / Turbo ─────────────────────────────────────────────────────────
+.turbo/
+turbo/
+
+# ─── Database ─────────────────────────────────────────────────────────────────
+# Keep migration SQL files — they are source of truth
+# Ignore drizzle-kit generated snapshots (can be regenerated)
+apps/api/src/db/migrations/meta/*.json
+# But keep the journal — it tracks migration order
+!apps/api/src/db/migrations/meta/_journal.json
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm/
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ─── Editors & IDEs ───────────────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+*.pem
+*.key
+*.cert
