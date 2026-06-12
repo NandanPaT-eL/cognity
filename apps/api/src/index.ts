@@ -34,9 +34,10 @@ const dashboardOrigins = configuredOrigins.size > 0 ? configuredOrigins : defaul
 
 // ─── SDK static files (registered BEFORE clerkPlugin) ────────────────────
 // Serves packages/sdk/dist/* at /sdk/*
-// e.g. GET /sdk/index.js → packages/sdk/dist/index.js
-// Must be before Clerk so static asset requests skip auth middleware entirely.
-const sdkDistPath = path.resolve(__dirname, '../../../packages/sdk/dist')
+// SDK_DIST_PATH env var overrides the relative path for flexibility.
+// Default: two levels up from apps/api/dist → project root → packages/sdk/dist
+const sdkDistPath = process.env.SDK_DIST_PATH
+  ?? path.resolve(__dirname, '../../packages/sdk/dist')
 app.register(staticFiles, {
   root: sdkDistPath,
   prefix: '/sdk/',
