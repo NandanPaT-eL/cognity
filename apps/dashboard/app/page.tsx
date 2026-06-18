@@ -1,490 +1,597 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import {
-  MessageSquare, BarChart2, Zap, BookOpen,
-  ArrowRight, Check, ChevronRight
+  ArrowRight, Check, X, MessageSquare, Zap, BarChart2,
+  BookOpen, Code2, Target, Sparkles, Clock, Users,
 } from 'lucide-react'
+import { ChatDemo } from '@/components/landing/chat-demo'
 
 export const metadata = {
   title: 'Cognity — AI Onboarding for SaaS',
-  description: 'Replace static product tours with real conversations. Guide every user to their first success moment automatically.',
+  description:
+    'Replace static product tours with real conversations. Cognity asks each user what they want, guides them to success, and catches them when they get stuck.',
 }
 
-/* ─── Data ───────────────────────────────────────────────────────────────── */
+const logos = ['Workflow.io', 'DataPulse', 'Formly', 'Stackr', 'Pipeloop', 'NovaCRM']
 
-const features = [
+const bento = [
   {
-    icon: MessageSquare,
-    title: 'Conversational onboarding',
-    body: 'A chat widget that asks each user what they want to achieve, then guides them step by step using your own documentation.',
+    icon: Target,
+    title: 'Intent-aware onboarding',
+    body: 'Cognity AI agent captures user intent and helps them achieve their goal.',
+    className: 'md:col-span-2 md:row-span-1',
+    large: true,
   },
   {
     icon: Zap,
     title: 'Stuck-user detection',
-    body: 'After 45 seconds of inactivity, Cognity sends a contextual nudge — personalised to the user\'s stated goal and current page.',
+    body: 'Detects when users are struggling and proactively guides them before they drop off.',
+    className: 'md:col-span-1',
+    large: false,
   },
   {
-    icon: BookOpen,
-    title: 'RAG-powered answers',
-    body: 'Upload your help docs once. Cognity embeds them and retrieves the most relevant chunks for every response. No hallucinations about your product.',
+    icon: Sparkles,
+    title: 'Milestone celebrations',
+    body: 'Celebrates key achievements to keep users progressing toward value.',
+    className: 'md:col-span-1',
+    large: false,
+  },
+  {
+    icon: MessageSquare,
+    title: 'Ongoing guidance',
+    body: 'Provides in-product guidance throughout the user journey, automatically resolving up to 93% of support questions.',
+    className: 'md:col-span-1',
+    large: false,
   },
   {
     icon: BarChart2,
     title: 'Activation analytics',
-    body: 'See total sessions, activated users, and activation rate at a glance. Drill into exactly which pages lose the most users.',
+    body: 'Track activation, time-to-value, drop-offs, and onboarding performance in one place.',
+    className: 'md:col-span-1',
+    large: false,
   },
 ]
 
-const steps: { n: string; title: string; body: string; code?: string }[] = [
-  {
-    n: '01',
-    title: 'Sign up and upload your docs',
-    body: 'Create your account, paste your product documentation or upload a file. Cognity embeds it in under a minute.',
-  },
-  {
-    n: '02',
-    title: 'Define your activation event',
-    body: 'Tell Cognity what "success" looks like — e.g. bot_created or first_report_sent. It will steer every user toward that moment.',
-  },
-  {
-    n: '03',
-    title: 'Paste one line of code',
-    body: 'Drop a single script tag into your product. No npm install, no build step, no framework dependency.',
-    code: `<script src="https://cdn.cognity.ai/widget.js" data-id="YOUR_APP_ID" async></script>`,
-  },
-  {
-    n: '04',
-    title: 'Watch activation rates climb',
-    body: 'Users start getting guided conversations from day one. Track activation in your dashboard and iterate on your docs.',
-  },
+const comparison = {
+  old: ['Generic step-by-step tours', 'Same script for every user', 'Skipped in under 10 seconds', 'No idea where users get stuck', 'Weeks to set up with engineering'],
+  new: ['Real conversation from line one', 'Path built around each user\'s goal', 'Engages because it actually helps', 'Stuck-page analytics built in', 'One script tag, live in minutes'],
+}
+
+const workflow = [
+  { icon: BookOpen, label: 'Upload docs',       desc: 'Paste or upload your product documentation' },
+  { icon: Target,   label: 'Set activation goal', desc: 'One event name defines success' },
+  { icon: Code2,    label: 'Paste snippet',      desc: 'Single script tag in your app' },
+  { icon: Sparkles, label: 'Users activate',     desc: 'Conversations start automatically' },
 ]
 
-const testimonials = [
-  {
-    quote: 'We went from a 12-step written guide to a 3-minute conversation. Users who chat with Cognity activate at 2× the rate.',
-    name: 'Sarah K.',
-    role: 'Founder, workflow automation SaaS',
-  },
-  {
-    quote: 'Setup was literally one line of code. Within a week I could see exactly which page was killing my trial conversions.',
-    name: 'Marcus T.',
-    role: 'CTO, B2B analytics platform',
-  },
-  {
-    quote: 'Our support tickets dropped 30% in the first month. Users just… figure it out now, because they have someone to ask.',
-    name: 'Priya M.',
-    role: 'Head of Product, developer tools startup',
-  },
+const faqs = [
+  { q: 'How is this different from Intercom or a chatbot?', a: 'Cognity is purpose-built for onboarding — not support. It knows your docs, tracks activation goals, and detects when users are stuck on a specific page.' },
+  { q: 'Do I need engineering to set this up?', a: 'No. Upload your docs in the dashboard, paste one script tag, and you\'re live. Most teams are running in under five minutes.' },
+  { q: 'What counts as an "activation goal"?', a: 'Any event you already track — bot_created, workspace_connected, first_export. Cognity steers every conversation toward that moment.' },
+  { q: 'Can I use my existing help documentation?', a: 'Yes. Upload PDFs, markdown, HTML, or paste text directly. Cognity chunks and embeds it automatically.' },
 ]
 
 const pricingPlans = [
-  {
-    name: 'Starter',
-    price: 'Free',
-    sub: 'Forever',
-    features: ['500 sessions / month', '1 documentation source', 'Basic analytics', 'Email support'],
-    cta: 'Get started',
-    highlighted: false,
+  { 
+    name: 'Starter Plan', 
+    subtitle: 'For solo builders and small projects',
+    price: '39AUD',  
+    period: '/mo',   
+    features: [
+      '1,000 Intent capture / month', 
+      '2,000 Stuck-user detection / month', 
+      '5,000 MAU (Monthly Active User Tracked) / month', 
+      '2,000 Triggers (user intercatis with Cognity AI) / month', 
+      '3 Team members', 
+      '3 Integrations', 
+      'Ongoing guidance', 
+      'Basic analytic dashboard', 
+      'Cognity branding'
+    ], 
+    cta: 'Start free trial (after Beta)',   
+    highlighted: false 
   },
-  {
-    name: 'Growth',
-    price: '$49',
-    sub: 'per month',
-    features: ['5,000 sessions / month', 'Unlimited documentation', 'Full analytics + stuck pages', 'Custom activation goals', 'Priority support'],
-    cta: 'Start free trial',
-    highlighted: true,
+  { 
+    name: 'Growth Plan',  
+    subtitle: 'For growing teams scaling their product',
+    price: '99AUD',   
+    period: '/mo',   
+    features: [
+      '5,000 Intent capture / month', 
+      '10,000 Stuck-user detection / month', 
+      '25,000 MAU (Monthly Active User Tracked) / month', 
+      '10,000 Triggers (user intercatis with Cognity AI) / month', 
+      '10 Team members', 
+      'Unlimited Integrations', 
+      'Ongoing guidance', 
+      'Advanced analytic dashboard', 
+      'Your own branding and customisable themes',
+      'Micro surveys'
+    ],        
+    cta: 'Start free trial (after Beta)',  
+    highlighted: true  
   },
-  {
-    name: 'Scale',
-    price: '$149',
-    sub: 'per month',
-    features: ['Unlimited sessions', 'Unlimited documentation', 'Advanced analytics + exports', 'Multiple products', 'Slack support'],
-    cta: 'Talk to us',
-    highlighted: false,
+  { 
+    name: 'Enterprise',   
+    subtitle: 'Contact us for larger teams or custom requirements, we can put together a plan that fits your needs.',
+    price: '',  
+    period: '',   
+    features: [],                          
+    cta: 'Contact us',   
+    highlighted: false 
   },
 ]
 
-/* ─── Page ───────────────────────────────────────────────────────────────── */
-
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-paper font-sans">
+    <div className="min-h-screen font-sans overflow-x-hidden" style={{ background: 'var(--canvas)' }}>
 
-      {/* ── Nav ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-ink/06 bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[18px] font-bold tracking-tight text-ink">Cognity</span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead/60 mt-0.5">beta</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-[13px] font-medium text-ink/50">
-            <a href="#how-it-works" className="hover:text-ink transition-colors">How it works</a>
-            <a href="#features" className="hover:text-ink transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/auth/sign-in" className="text-[13px] font-medium text-ink/60 hover:text-ink transition-colors">
-              Sign in
-            </Link>
-            <Link
-              href="/auth/sign-up"
-              className="cog-btn-primary text-[13px] px-4 py-2"
-            >
-              Get started free
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* ── Top Banner ──────────────────────────────────────────────── */}
+      <div className="absolute top-0 inset-x-0 z-[60] py-2.5 text-center text-[13px] font-medium" style={{ background: 'var(--purple)', color: '#fff' }}>
+        $75 Lifetime deal while in Beta
+      </div>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-lead/20 bg-lead/06 px-3.5 py-1.5 text-[12px] font-semibold text-lead mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-lead animate-pulse-dot" />
-          Now in beta — free for the first 50 teams
-        </div>
-
-        <h1 className="text-[52px] font-bold tracking-tight text-ink leading-[1.1] max-w-3xl mx-auto">
-          Stop losing users before
-          <br />
-          <span className="text-lead">they see the value.</span>
-        </h1>
-
-        <p className="mt-6 text-[18px] text-ink/50 max-w-xl mx-auto leading-relaxed">
-          Cognity replaces static product tours with real AI conversations that guide each user to their first success moment automatically.
-        </p>
-
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/auth/sign-up"
-            className="cog-btn-primary text-[15px] px-7 py-3.5 gap-2"
-          >
-            Start for free
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a
-            href="#how-it-works"
-            className="cog-btn-ghost text-[15px] px-7 py-3.5"
-          >
-            See how it works
-          </a>
-        </div>
-
-        <p className="mt-4 text-[12px] text-ink/30">No credit card required · Setup in under 5 minutes</p>
-
-        {/* Hero visual — mock chat widget */}
-        <div className="mt-16 mx-auto max-w-sm">
-          <div className="rounded-2xl border border-ink/08 bg-white shadow-card-hover overflow-hidden text-left">
-            {/* Widget header */}
-            <div className="bg-ink px-4 py-3.5 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-lead flex items-center justify-center shrink-0">
-                <MessageSquare className="h-3.5 w-3.5 text-white" />
-              </div>
-              <div>
-                <p className="text-[13px] font-semibold text-white leading-none">Cognity</p>
-                <p className="text-[11px] text-white/40 mt-0.5">Your onboarding assistant</p>
-              </div>
-              <div className="ml-auto w-2 h-2 rounded-full bg-green-400" />
-            </div>
-            {/* Messages */}
-            <div className="px-4 py-4 space-y-3 bg-paper/50">
-              <ChatBubble role="assistant" text="Welcome! What are you trying to achieve today?" />
-              <ChatBubble role="user" text="I want to connect my Slack workspace" />
-              <ChatBubble role="assistant" text="Got it! Head to Settings → Integrations → Slack. Click 'Connect workspace' and sign in with your Slack admin account. Takes about 30 seconds." />
-            </div>
-            {/* Input */}
-            <div className="border-t border-ink/06 px-4 py-3 flex gap-2 bg-white">
-              <div className="flex-1 rounded-full bg-paper border border-ink/08 px-3.5 py-2 text-[12px] text-ink/30">
-                Type a message…
-              </div>
-              <div className="w-8 h-8 rounded-full bg-lead flex items-center justify-center shrink-0">
-                <ArrowRight className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
-          </div>
-          {/* Floating bubble */}
-          <div className="flex justify-end mt-3 mr-1">
-            <div className="w-12 h-12 rounded-full bg-lead shadow-card-hover flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-white" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Social proof strip — infinite marquee ────────────────────────── */}
-      <section className="border-y border-ink/06 bg-white py-7 overflow-hidden">
-        <p className="text-center text-[12px] font-medium text-ink/30 uppercase tracking-widest mb-6">
-          Trusted by early-stage SaaS teams
-        </p>
-
-        {/* Inline keyframe so it works regardless of Tailwind JIT scanning */}
-        <style>{`
-          @keyframes marquee {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .marquee-track {
-            display: flex;
-            width: max-content;
-            animation: marquee 28s linear infinite;
-          }
-          .marquee-track:hover {
-            animation-play-state: paused;
-          }
-          .marquee-group {
-            display: flex;
-            align-items: center;
-            gap: 4rem;
-            padding-right: 4rem;
-            flex-shrink: 0;
-          }
-        `}</style>
-
-        <div
+      {/* ── Floating nav ──────────────────────────────────────────────── */}
+      <div className="fixed top-14 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+        <header
+          className="pointer-events-auto flex items-center gap-1 rounded-full pl-5 pr-2 py-2 max-w-full"
           style={{
-            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+            border: '1px solid rgba(14,11,26,0.08)',
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 2px 16px rgba(14,11,26,0.06)',
           }}
         >
-          <div className="marquee-track">
-            <div className="marquee-group">
-              {[
-                'Workflow.io', 'DataPulse', 'Formly', 'Stackr', 'Pipeloop',
-                'NovaCRM', 'Chartwell', 'Loopbase',
-              ].map((name, i) => (
-                <span
-                  key={i}
-                  className="text-[15px] font-bold text-ink/25 tracking-tight whitespace-nowrap select-none"
-                >
-                  {name}
-                </span>
-              ))}
+          <Link href="/" className="flex items-center gap-2 text-[18px] font-bold tracking-[-0.03em] mr-4 shrink-0" style={{ color: 'var(--void)' }}>
+            <Image src="/logo.png" alt="Cognity logo" width={36} height={36} className="object-contain" />
+            <div className="flex items-start gap-1.5">
+              <span>cognity</span>
+              <span className="rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white mt-0.5" style={{ background: 'var(--purple)' }}>Beta</span>
             </div>
-            <div className="marquee-group" aria-hidden="true">
-              {[
-                'Workflow.io', 'DataPulse', 'Formly', 'Stackr', 'Pipeloop',
-                'NovaCRM', 'Chartwell', 'Loopbase',
-              ].map((name, i) => (
-                <span
-                  key={i}
-                  className="text-[15px] font-bold text-ink/25 tracking-tight whitespace-nowrap select-none"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Problem ──────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <p className="cog-eyebrow mb-4">The problem</p>
-        <h2 className="text-[36px] font-bold text-ink tracking-tight leading-tight">
-          Most users churn before they
-          <br />ever see your product work.
-        </h2>
-        <p className="mt-5 text-[16px] text-ink/50 max-w-2xl mx-auto leading-relaxed">
-          Generic product tours get skipped. Help docs don't get read. Users hit one confusing step, give up, and never come back. You lose them before they ever understand why your product is worth keeping.
-        </p>
-        <div className="mt-12 grid gap-4 sm:grid-cols-3 text-left">
-          {[
-            { stat: '~60%', label: 'of SaaS trials never reach the activation moment' },
-            { stat: '< 3 min', label: 'average time users spend before abandoning setup' },
-            { stat: '5×', label: 'cheaper to activate a trial than acquire a new one' },
-          ].map(({ stat, label }) => (
-            <div key={stat} className="cog-card px-6 py-5">
-              <p className="text-[36px] font-bold text-lead leading-none">{stat}</p>
-              <p className="mt-2 text-[13px] text-ink/50 leading-snug">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="bg-ink py-24">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="text-center mb-16">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-lead mb-3">How it works</p>
-            <h2 className="text-[36px] font-bold text-white tracking-tight">Live in under 5 minutes.</h2>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            {steps.map((step) => (
-              <div key={step.n} className="flex gap-5">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-lead/15 flex items-center justify-center">
-                  <span className="text-[12px] font-bold font-mono text-lead">{step.n}</span>
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-semibold text-white mb-1.5">{step.title}</h3>
-                  <p className="text-[14px] text-white/40 leading-relaxed">{step.body}</p>
-                  {step.code && (
-                    <pre className="mt-3 rounded-lg bg-white/05 border border-white/08 px-4 py-3 text-[12px] font-mono text-lead/80 overflow-x-auto">
-                      {step.code}
-                    </pre>
-                  )}
-                </div>
-              </div>
+          </Link>
+          <nav className="hidden sm:flex items-center">
+            {[
+              ['Product', '#product'],
+              ['How it works', '#workflow'],
+              ['Pricing', '#pricing'],
+            ].map(([label, href]) => (
+              <a key={label} href={href} className="cog-nav-link px-3 py-1.5 rounded-full">
+                {label}
+              </a>
             ))}
+          </nav>
+          <div className="flex items-center gap-1 ml-2 sm:ml-4">
+            <Link href="/auth/sign-in" className="cog-nav-link px-3 py-1.5 rounded-full hidden sm:block">
+              Sign in
+            </Link>
+            <Link href="/auth/sign-up" className="cog-btn-primary !py-2 !px-4 !text-[14px]">
+              Get started
+            </Link>
           </div>
-        </div>
-      </section>
+        </header>
+      </div>
 
-      {/* ── Features ─────────────────────────────────────────────────────── */}
-      <section id="features" className="mx-auto max-w-5xl px-6 py-24">
-        <div className="text-center mb-16">
-          <p className="cog-eyebrow mb-3">Features</p>
-          <h2 className="text-[36px] font-bold text-ink tracking-tight">Everything you need to activate users.</h2>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2">
-          {features.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="cog-card p-7 group hover:shadow-card-hover transition-shadow duration-200">
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-lead/08 text-lead group-hover:bg-lead group-hover:text-white transition-colors duration-200">
-                <Icon className="h-5 w-5" strokeWidth={1.8} />
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="relative pt-32 pb-20 lg:pt-36 lg:pb-28">
+        {/* Purple radial gradient backdrop */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at 65% 15%, rgba(124,58,237,0.10) 0%, transparent 65%)',
+          }}
+        />
+        {/* Subtle grid */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none grid-bg opacity-40" />
+
+        <div className="cog-container">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-12 items-center">
+            <div>
+              {/* Badge */}
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-8"
+                style={{
+                  border: '1px solid rgba(124,58,237,0.25)',
+                  background: 'rgba(124,58,237,0.07)',
+                }}
+              >
+                <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--purple)' }} />
+                <span className="text-[12px] font-semibold" style={{ color: '#000000' }}>
+                  For the first 50 teams
+                </span>
               </div>
-              <h3 className="text-[15px] font-semibold text-ink mb-1.5">{title}</h3>
-              <p className="text-[13px] text-ink/50 leading-relaxed">{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ── Testimonials ─────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-ink/06 py-24">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="text-center mb-14">
-            <p className="cog-eyebrow mb-3">What teams are saying</p>
-            <h2 className="text-[32px] font-bold text-ink tracking-tight">Real results from real teams.</h2>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map(({ quote, name, role }) => (
-              <div key={name} className="rounded-xl border border-ink/08 p-6">
-                <p className="text-[14px] text-ink/70 leading-relaxed mb-5">"{quote}"</p>
-                <div>
-                  <p className="text-[13px] font-semibold text-ink">{name}</p>
-                  <p className="text-[12px] text-ink/40">{role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Pricing ──────────────────────────────────────────────────────── */}
-      <section id="pricing" className="mx-auto max-w-5xl px-6 py-24">
-        <div className="text-center mb-14">
-          <p className="cog-eyebrow mb-3">Pricing</p>
-          <h2 className="text-[36px] font-bold text-ink tracking-tight">Simple, predictable pricing.</h2>
-          <p className="mt-3 text-[15px] text-ink/50">Start free. Scale when you're ready.</p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {pricingPlans.map((plan) => (
-            <div
-              key={plan.name}
-              className={[
-                'rounded-xl p-7 flex flex-col',
-                plan.highlighted
-                  ? 'bg-ink text-white ring-2 ring-lead'
-                  : 'cog-card',
-              ].join(' ')}
-            >
-              <p className={`text-[11px] font-semibold uppercase tracking-widest mb-3 ${plan.highlighted ? 'text-lead' : 'text-ink/40'}`}>
-                {plan.name}
+              <h1
+                className="text-[44px] sm:text-[52px] lg:text-[56px] font-extrabold tracking-[-0.04em] leading-[1.04]"
+                style={{ color: '#000000' }}
+              >
+                Turn every signup into an achieved user.
+              </h1>
+              <p className="mt-6 text-[17px] leading-relaxed max-w-[480px]" style={{ color: '#000000' }}>
+                Stop losing users before they see value with the first Al-powered activation platform that understands user intent and guides users to success.
               </p>
-              <div className="mb-1">
-                <span className={`text-[40px] font-bold tracking-tight leading-none ${plan.highlighted ? 'text-white' : 'text-ink'}`}>
-                  {plan.price}
-                </span>
-                <span className={`ml-1.5 text-[13px] ${plan.highlighted ? 'text-white/40' : 'text-ink/40'}`}>
-                  {plan.sub}
-                </span>
+
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Link href="/auth/sign-up" className="cog-btn-primary text-[15px] gap-2">
+                  Get started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a href="#product" className="cog-btn-ghost text-[14px]">
+                  See how it works
+                </a>
               </div>
 
-              <ul className="mt-6 mb-8 space-y-2.5 flex-1">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-[13px]">
-                    <Check className={`h-4 w-4 shrink-0 mt-0.5 ${plan.highlighted ? 'text-lead' : 'text-lead'}`} strokeWidth={2.5} />
-                    <span className={plan.highlighted ? 'text-white/70' : 'text-ink/60'}>{f}</span>
+              <div className="mt-10 flex flex-wrap gap-8">
+                {[
+                  { icon: Clock,  label: 'Live in 3 min' },
+                  { icon: Code2,  label: 'No code required' },
+                  { icon: Users,  label: 'Built for SaaS Teams' },
+                ].map(({ icon: Icon, label }) => (
+                  <div key={label} className="flex items-center gap-2 text-[13px] font-medium" style={{ color: '#000000' }}>
+                    <Icon className="h-4 w-4" style={{ color: 'var(--purple)' }} strokeWidth={1.8} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:pl-4">
+              <ChatDemo />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Logo strip ────────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid rgba(14,11,26,0.06)', borderBottom: '1px solid rgba(14,11,26,0.06)' }} className="py-8">
+        <div className="cog-container flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] w-full text-center sm:w-auto sm:text-left"
+                style={{ color: '#000000' }}>
+            Trusted by teams at
+          </span>
+          {logos.map(name => (
+            <span key={name} className="text-[14px] font-bold tracking-tight" style={{ color: '#000000' }}>
+              {name}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Bento product grid ────────────────────────────────────────── */}
+      <section id="product" className="cog-container py-28">
+        <div className="mb-14 max-w-xl">
+          <span className="cog-eyebrow">Product</span>
+          <h2 className="mt-3 text-[38px] font-extrabold tracking-[-0.035em] leading-[1.1]" style={{ color: 'var(--void)' }}>
+            Built for activation,<br />not engagement theater.
+          </h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {bento.map(({ icon: Icon, title, body, className, large }) => (
+            <div
+              key={title}
+              className={`cog-bento-item rounded-[24px] p-8 ${className}`}
+            >
+              <div className={`cog-bento-icon mb-6 ${large ? 'h-12 w-12' : 'h-10 w-10'}`}>
+                <Icon className={large ? 'h-5 w-5' : 'h-4 w-4'} strokeWidth={1.7} />
+              </div>
+              <h3 className={`font-bold mb-2 ${large ? 'text-[18px]' : 'text-[15px]'}`} style={{ color: 'var(--void)' }}>{title}</h3>
+              <p className={`leading-relaxed ${large ? 'text-[15px]' : 'text-[14px]'}`} style={{ color: 'var(--text-soft)' }}>{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Comparison ────────────────────────────────────────────────── */}
+      <section className="py-28 relative overflow-hidden" style={{ background: 'var(--void)' }}>
+        <div aria-hidden className="absolute inset-0 opacity-[0.025]" style={{
+          backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }} />
+        {/* Purple glow */}
+        <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+             style={{ background: 'radial-gradient(ellipse, rgba(124,58,237,0.20) 0%, transparent 70%)' }} />
+
+        <div className="cog-container relative">
+          <div className="text-center mb-16">
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--purple)' }}>Why switch</span>
+            <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em] text-white">
+              Product tours vs. Cognity
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+            <div className="rounded-[24px] p-8" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
+              <p className="text-[12px] font-bold uppercase tracking-wider mb-6" style={{ color: 'rgba(255,255,255,0.28)' }}>Static tours</p>
+              <ul className="space-y-4">
+                {comparison.old.map(item => (
+                  <li key={item} className="flex items-start gap-3 text-[14px]" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    <X className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'rgba(255,255,255,0.22)' }} strokeWidth={2} />
+                    {item}
                   </li>
                 ))}
               </ul>
+            </div>
+            <div className="rounded-[24px] p-8" style={{ border: '1px solid rgba(124,58,237,0.35)', background: 'rgba(124,58,237,0.10)' }}>
+              <p className="text-[12px] font-bold uppercase tracking-wider mb-6" style={{ color: 'var(--lilac)' }}>With Cognity</p>
+              <ul className="space-y-4">
+                {comparison.new.map(item => (
+                  <li key={item} className="flex items-start gap-3 text-[14px]" style={{ color: 'rgba(255,255,255,0.78)' }}>
+                    <Check className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#A78BFA' }} strokeWidth={2.5} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <Link
-                href="/auth/sign-up"
-                className={[
-                  'w-full text-center rounded-lg px-5 py-2.5 text-[13px] font-semibold transition-all duration-150',
-                  plan.highlighted
-                    ? 'bg-lead text-white hover:bg-lead/90'
-                    : 'border border-ink/12 text-ink/70 hover:border-ink/20 hover:text-ink bg-white',
-                ].join(' ')}
+      {/* ── Workflow timeline ──────────────────────────────────────────── */}
+      <section id="workflow" className="cog-container py-28">
+        <div className="text-center mb-16">
+          <span className="cog-eyebrow">How it works</span>
+          <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>
+            Four steps. Five minutes.
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+          <div aria-hidden className="hidden lg:block absolute top-10 left-[12%] right-[12%] h-px" style={{ background: 'rgba(124,58,237,0.15)' }} />
+          {workflow.map(({ icon: Icon, label, desc }, i) => (
+            <div key={label} className="relative text-center">
+              <div
+                className="mx-auto mb-5 w-14 h-14 rounded-2xl flex items-center justify-center relative z-10"
+                style={{
+                  background: 'var(--purple)',
+                  boxShadow: '0 4px 16px rgba(124,58,237,0.30)',
+                }}
               >
-                {plan.cta}
-              </Link>
+                <Icon className="h-5 w-5 text-white" strokeWidth={1.7} />
+              </div>
+              <span className="text-[11px] font-bold font-mono" style={{ color: 'var(--purple)' }}>0{i + 1}</span>
+              <h3 className="mt-1 text-[15px] font-bold" style={{ color: 'var(--void)' }}>{label}</h3>
+              <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-soft)' }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+
+      </section>
+
+      {/* ── Stats band ────────────────────────────────────────────────── */}
+      <section className="py-16" style={{ borderTop: '1px solid rgba(14,11,26,0.06)', borderBottom: '1px solid rgba(14,11,26,0.06)', background: 'var(--mist)' }}>
+        <div className="cog-container grid sm:grid-cols-3 gap-10 text-center">
+          {[
+            { stat: '2.4×', label: 'higher activation for users who chat' },
+            { stat: '−30%', label: 'support tickets in the first month' },
+            { stat: '<5 min', label: 'average time to go live' },
+          ].map(({ stat, label }) => (
+            <div key={stat}>
+              <p className="text-[48px] font-extrabold tracking-[-0.04em] leading-none" style={{ color: 'var(--purple)' }}>{stat}</p>
+              <p className="mt-3 text-[14px] max-w-[200px] mx-auto" style={{ color: 'var(--text-soft)' }}>{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────────────── */}
-      <section className="bg-ink py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-[40px] font-bold text-white tracking-tight leading-tight">
-            Your users deserve a better
-            <br />first experience.
+      {/* ── Testimonial ───────────────────────────────────────────────── */}
+      <section className="cog-container py-28">
+        <div
+          className="rounded-[32px] p-10 sm:p-14 relative overflow-hidden"
+          style={{ background: 'var(--void)' }}
+        >
+          <div aria-hidden className="absolute top-0 right-0 w-80 h-80 opacity-25 pointer-events-none" style={{
+            background: 'radial-gradient(circle, rgba(124,58,237,0.65) 0%, transparent 70%)',
+          }} />
+          <div className="relative max-w-2xl">
+            <p className="text-[22px] sm:text-[26px] font-semibold text-white leading-[1.35] tracking-[-0.02em]">
+              &ldquo;We replaced a 12-step written guide with Cognity in a morning. Users who chat with it activate at more than twice the rate of those who don&apos;t.&rdquo;
+            </p>
+            <div className="mt-8 flex items-center gap-4">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
+              >
+                <span className="text-[13px] font-bold" style={{ color: '#C4B5FD' }}>S</span>
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-white">Sarah K.</p>
+                <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.40)' }}>Founder, workflow automation SaaS</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-5 mt-5">
+          {[
+            { quote: 'Within a week I could see exactly which page was killing my trial conversions.', name: 'Marcus T.', role: 'CTO, B2B analytics' },
+            { quote: 'Support tickets dropped 30% in the first month. Users just figure things out now.', name: 'Priya M.', role: 'Head of Product, dev tools' },
+          ].map(({ quote, name, role }) => (
+            <div key={name} className="rounded-2xl p-7" style={{ border: '1px solid rgba(14,11,26,0.08)' }}>
+              <p className="text-[14px] leading-relaxed" style={{ color: 'var(--text-soft)' }}>&ldquo;{quote}&rdquo;</p>
+              <p className="mt-5 text-[13px] font-bold" style={{ color: 'var(--void)' }}>{name}</p>
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{role}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────── */}
+      <section className="py-28" style={{ background: 'var(--mist)' }}>
+        <div className="cog-container max-w-2xl">
+          <h2 className="text-[32px] font-extrabold tracking-[-0.03em] mb-10 text-center" style={{ color: 'var(--void)' }}>
+            Questions, answered.
           </h2>
-          <p className="mt-5 text-[16px] text-white/40 leading-relaxed max-w-xl mx-auto">
-            Join the teams using Cognity to turn confused trial users into activated, paying customers.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/auth/sign-up"
-              className="cog-btn-primary text-[15px] px-8 py-3.5"
+          <div className="space-y-3">
+            {faqs.map(({ q, a }) => (
+              <details
+                key={q}
+                className="group rounded-2xl overflow-hidden"
+                style={{ border: '1px solid rgba(14,11,26,0.08)', background: 'var(--canvas)' }}
+              >
+                <summary
+                  className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none text-[15px] font-semibold select-none [&::-webkit-details-marker]:hidden"
+                  style={{ color: 'var(--void)' }}
+                >
+                  {q}
+                  <span
+                    className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[16px] leading-none group-open:rotate-45 transition-transform"
+                    style={{ background: 'var(--mist)', color: 'var(--purple)' }}
+                  >
+                    +
+                  </span>
+                </summary>
+                <div
+                  className="px-6 pb-5 text-[14px] leading-relaxed pt-4"
+                  style={{ borderTop: '1px solid rgba(14,11,26,0.06)', color: 'var(--text-soft)' }}
+                >
+                  {a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ───────────────────────────────────────────────────── */}
+      <section id="pricing" className="cog-container py-28">
+        <div className="text-center mb-14">
+          <span className="cog-eyebrow">Pricing</span>
+          <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>
+            Simple, transparent pricing.
+          </h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
+          {pricingPlans.map(plan => (
+            <div
+              key={plan.name}
+              className="rounded-[24px] p-8 flex flex-col"
+              style={plan.highlighted
+                ? {
+                    background: 'var(--purple)',
+                    boxShadow: '0 8px 32px rgba(124,58,237,0.30)',
+                    transform: 'scale(1.02)',
+                  }
+                : {
+                    border: '1px solid rgba(14,11,26,0.08)',
+                    background: 'var(--canvas)',
+                  }
+              }
             >
-              Get started free
+              {plan.highlighted && (
+                <span className="self-start text-[10px] font-bold uppercase tracking-wider mb-4" style={{ color: '#DDD6FE' }}>
+                  Most popular
+                </span>
+              )}
+              <h3 className="text-[20px] font-bold mb-2"
+                 style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}>
+                {plan.name}
+              </h3>
+              <p className="text-[14px] leading-relaxed mb-6 min-h-[3rem]"
+                 style={{ color: plan.highlighted ? 'rgba(255,255,255,0.7)' : 'var(--text-soft)' }}>
+                {plan.subtitle}
+              </p>
+
+              {plan.price && (
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span className="text-[32px] font-bold" style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}>
+                    {plan.price}
+                  </span>
+                  <span className="text-[14px] font-medium" style={{ color: plan.highlighted ? 'rgba(255,255,255,0.7)' : 'var(--text-soft)' }}>
+                    {plan.period}
+                  </span>
+                </div>
+              )}
+
+              <Link
+                href="/auth/sign-up"
+                className={`w-full flex justify-center text-center mb-8 ${plan.highlighted ? 'cog-plan-cta cog-plan-cta--dark' : 'cog-plan-cta cog-plan-cta--light'} ${plan.features.length === 0 ? 'mt-auto' : ''}`}
+              >
+                {plan.cta}
+              </Link>
+
+              {plan.features.length > 0 && (
+                <>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: plan.highlighted ? 'rgba(255,255,255,0.9)' : 'var(--void)' }}>
+                    WHAT&apos;S INCLUDED
+                  </p>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map(f => (
+                      <li key={f} className="flex items-start gap-2.5 text-[13px]">
+                        <Check
+                          className="h-4 w-4 shrink-0 mt-0.5"
+                          style={{ color: plan.highlighted ? '#DDD6FE' : 'var(--purple)' }}
+                          strokeWidth={2.5}
+                        />
+                        <span style={{ color: plan.highlighted ? 'rgba(255,255,255,0.85)' : 'var(--text-soft)' }}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section className="cog-container pb-28">
+        <div
+          className="rounded-[32px] p-12 sm:p-16 text-center relative overflow-hidden"
+          style={{ border: '1px solid rgba(124,58,237,0.15)', background: 'var(--mist)' }}
+        >
+          <div aria-hidden className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(124,58,237,0.08) 0%, transparent 70%)' }}
+          />
+          <div className="relative">
+            <h2
+              className="text-[36px] sm:text-[42px] font-extrabold tracking-[-0.04em] leading-[1.08] max-w-lg mx-auto"
+              style={{ color: 'var(--void)' }}
+            >
+              Stop losing users before they see value.
+            </h2>
+            <p className="mt-4 text-[16px] max-w-md mx-auto" style={{ color: 'var(--text-soft)' }}>
+              Set up in minutes. No credit card. No engineering sprint.
+            </p>
+            <Link href="/auth/sign-up" className="cog-btn-primary mt-8 text-[15px] gap-2 inline-flex">
+              Get started
               <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/auth/sign-in"
-              className="text-[14px] font-medium text-white/40 hover:text-white/70 transition-colors flex items-center gap-1"
-            >
-              Already have an account <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-ink/06 bg-paper py-10">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[15px] font-bold text-ink">Cognity</span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead/60">v1</span>
+      {/* ── Footer ────────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid rgba(14,11,26,0.08)', background: 'var(--canvas)' }}>
+        <div className="cog-container py-14 grid sm:grid-cols-4 gap-10">
+          <div className="sm:col-span-2">
+            <p className="text-[18px] font-bold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>cognity</p>
+            <p className="mt-3 text-[13px] max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              AI onboarding that guides every user to their first success moment.
+            </p>
           </div>
-          <p className="text-[12px] text-ink/30">© {new Date().getFullYear()} Cognity. Built for SaaS teams who care about activation.</p>
-          <div className="flex gap-5 text-[12px] font-medium text-ink/40">
-            <Link href="/auth/sign-in" className="hover:text-ink transition-colors">Sign in</Link>
-            <Link href="/auth/sign-up" className="hover:text-ink transition-colors">Sign up</Link>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>Product</p>
+            <div className="flex flex-col gap-2.5">
+              {[['Product', '#product'], ['How it works', '#workflow'], ['Pricing', '#pricing']].map(([l, h]) => (
+                <a key={l} href={h} className="cog-footer-link">{l}</a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>Account</p>
+            <div className="flex flex-col gap-2.5">
+              <Link href="/auth/sign-in" className="text-[14px] font-medium transition-colors"
+                    style={{ color: 'var(--text-soft)' }}>Sign in</Link>
+              <Link href="/auth/sign-up" className="text-[14px] font-medium transition-colors"
+                    style={{ color: 'var(--text-soft)' }}>Sign up</Link>
+            </div>
           </div>
         </div>
+        <div className="cog-container pb-8 text-[12px]" style={{ color: 'rgba(14,11,26,0.25)' }}>
+          © {new Date().getFullYear()} Cognity
+        </div>
       </footer>
-
-    </div>
-  )
-}
-
-/* ─── Chat bubble component ──────────────────────────────────────────────── */
-function ChatBubble({ role, text }: { role: 'user' | 'assistant'; text: string }) {
-  return (
-    <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={[
-          'max-w-[85%] rounded-xl px-3.5 py-2.5 text-[12px] leading-relaxed',
-          role === 'user'
-            ? 'bg-lead text-white rounded-br-sm'
-            : 'bg-white border border-ink/08 text-ink/80 rounded-bl-sm shadow-card',
-        ].join(' ')}
-      >
-        {text}
-      </div>
     </div>
   )
 }

@@ -4,42 +4,45 @@ const config: Config = {
   content: [
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
-    './lib/**/*.{ts,tsx}'
+    './lib/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {
       colors: {
-        // CSS-variable-backed colors — these support the /opacity syntax
-        // e.g. text-ink/50, bg-lead/10, border-paper/80
-        ink: {
-          DEFAULT: 'rgb(var(--color-ink) / <alpha-value>)',
-        },
-        lead: {
-          DEFAULT: 'rgb(var(--color-lead) / <alpha-value>)',
-        },
-        paper: {
-          DEFAULT: 'rgb(var(--color-paper) / <alpha-value>)',
-        },
+        // CSS-variable-backed — all support the opacity modifier (e.g. bg-purple/10)
+        void:   { DEFAULT: 'rgb(var(--color-void)   / <alpha-value>)' },
+        canvas: { DEFAULT: 'rgb(var(--color-canvas) / <alpha-value>)' },
+        mist:   { DEFAULT: 'rgb(var(--color-mist)   / <alpha-value>)' },
+        stone:  { DEFAULT: 'rgb(var(--color-stone)  / <alpha-value>)' },
+        purple: { DEFAULT: 'rgb(var(--color-purple) / <alpha-value>)' },
+        lilac:  { DEFAULT: 'rgb(var(--color-lilac)  / <alpha-value>)' },
+        // Backwards-compat aliases
+        ink:    { DEFAULT: 'rgb(var(--color-void)   / <alpha-value>)' },
+        accent: { DEFAULT: 'rgb(var(--color-purple) / <alpha-value>)' },
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
-        sm:   '8px',
-        md:   '12px',
-        lg:   '16px',
-        xl:   '20px',
-        '2xl':'24px',
+        'xl':  '24px',
+        '2xl': '32px',
+        '3xl': '40px',
       },
       boxShadow: {
-        card:       '0 1px 3px rgba(13,13,13,0.08), 0 4px 16px rgba(13,13,13,0.06)',
-        'card-hover':'0 2px 8px rgba(13,13,13,0.10), 0 8px 24px rgba(13,13,13,0.10)',
+        'xs': 'var(--shadow-xs)',
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
       },
       keyframes: {
         'fade-up': {
-          '0%':   { opacity: '0', transform: 'translateY(6px)' },
+          '0%':   { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         'pulse-dot': {
           '0%, 100%': { opacity: '1' },
@@ -51,9 +54,10 @@ const config: Config = {
         },
       },
       animation: {
-        'fade-up':   'fade-up 0.25s ease both',
+        'fade-up':   'fade-up 0.35s cubic-bezier(0.22,1,0.36,1) both',
+        'fade-in':   'fade-in 0.2s ease both',
         'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
-        'marquee':   'marquee 28s linear infinite',
+        'marquee':   'marquee 32s linear infinite',
       },
     },
   },

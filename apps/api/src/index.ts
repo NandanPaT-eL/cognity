@@ -36,8 +36,11 @@ const dashboardOrigins = configuredOrigins.size > 0 ? configuredOrigins : defaul
 // Serves packages/sdk/dist/* at /sdk/*
 // SDK_DIST_PATH env var overrides the relative path for flexibility.
 // Default: two levels up from apps/api/dist → project root → packages/sdk/dist
-const sdkDistPath = process.env.SDK_DIST_PATH
-  ?? path.resolve(__dirname, '../../packages/sdk/dist')
+const sdkDistPath = path.resolve(
+  process.env.SDK_DIST_PATH
+    ? path.resolve(process.cwd(), process.env.SDK_DIST_PATH)
+    : path.resolve(__dirname, '../../packages/sdk/dist')
+)
 app.register(staticFiles, {
   root: sdkDistPath,
   prefix: '/sdk/',

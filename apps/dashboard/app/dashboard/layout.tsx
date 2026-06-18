@@ -1,39 +1,52 @@
 "use client"
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import { LayoutDashboard, BarChart2, BookOpen, Target, Code } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard',            label: 'Overview',         icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/analytics',  label: 'Analytics',        icon: BarChart2,       exact: false },
-  { href: '/dashboard/docs',       label: 'Documentation',    icon: BookOpen,        exact: false },
-  { href: '/dashboard/goals',      label: 'Activation Goal',  icon: Target,          exact: false },
-  { href: '/dashboard/install',    label: 'Install',          icon: Code,            exact: false },
+  { href: '/dashboard',           label: 'Overview',        icon: LayoutDashboard, exact: true  },
+  { href: '/dashboard/analytics', label: 'Analytics',       icon: BarChart2,       exact: false },
+  { href: '/dashboard/docs',      label: 'Documentation',   icon: BookOpen,        exact: false },
+  { href: '/dashboard/goals',     label: 'Activation Goal', icon: Target,          exact: false },
+  { href: '/dashboard/install',   label: 'Install',         icon: Code,            exact: false },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-screen bg-paper">
+    <div className="flex min-h-screen" style={{ background: 'var(--mist)' }}>
 
-      {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="w-56 shrink-0 flex flex-col bg-ink">
-
-        {/* Wordmark */}
-        <div className="px-6 pt-7 pb-6">
-          <span className="text-[22px] font-bold tracking-tight text-white">
-            Cognity
-          </span>
-          <span className="ml-1.5 text-[11px] font-medium text-white/30 uppercase tracking-widest align-middle">
-            v1
-          </span>
+      {/* ── Sidebar — fixed, full height ──────────────────────────────── */}
+      <aside
+        className="fixed inset-y-0 left-0 z-30 w-[232px] flex flex-col"
+        style={{ background: 'var(--void)', borderRight: '1px solid rgba(255,255,255,0.06)' }}
+      >
+        {/* Logo */}
+        <div className="px-6 pt-7 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-[20px] font-bold tracking-[-0.03em] text-white hover:text-white/80 transition-colors"
+          >
+            <Image src="/logo.png" alt="Cognity logo" width={32} height={32} className="object-contain" />
+            <div className="flex items-start gap-1.5">
+              <span>cognity</span>
+              <span className="rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white mt-0.5" style={{ background: 'var(--purple)' }}>Beta</span>
+            </div>
+          </Link>
         </div>
 
+        {/* Workspace label */}
+        <p className="px-6 pt-5 pb-2 text-[10px] font-bold uppercase tracking-[0.14em]"
+           style={{ color: 'rgba(255,255,255,0.25)' }}>
+          Workspace
+        </p>
+
         {/* Nav */}
-        <nav className="flex-1 px-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5">
           {navItems.map(({ href, label, icon: Icon, exact }) => {
             const isActive = exact ? pathname === href : pathname.startsWith(href)
             return (
@@ -41,13 +54,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={href}
                 href={href}
                 className={[
-                  'flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors duration-150',
+                  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-lead text-white'
-                    : 'text-white/50 hover:bg-white/08 hover:text-white',
+                    ? 'text-white'
+                    : 'hover:text-white/90',
                 ].join(' ')}
+                style={isActive
+                  ? { background: 'rgba(124,58,237,0.35)', color: '#fff', boxShadow: '0 2px 8px rgba(124,58,237,0.20)' }
+                  : { color: 'rgba(255,255,255,0.45)' }
+                }
               >
-                <Icon className="h-4 w-4 shrink-0" strokeWidth={isActive ? 2.5 : 1.8} />
+                <Icon
+                  className="h-[15px] w-[15px] shrink-0"
+                  strokeWidth={isActive ? 2.2 : 1.7}
+                  style={{ color: isActive ? '#C4B5FD' : 'inherit' }}
+                />
                 {label}
               </Link>
             )
@@ -55,13 +76,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User */}
-        <div className="border-t border-white/08 px-4 py-4">
+        <div className="px-4 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <UserButton
             appearance={{
               elements: {
-                userButtonBox:               'flex items-center gap-2.5',
-                userButtonOuterIdentifier:   'text-[13px] font-medium text-white/70',
-                userButtonAvatarBox:         'w-7 h-7',
+                userButtonBox:             'flex items-center gap-2.5',
+                userButtonOuterIdentifier: 'text-[12px] font-medium text-white/50',
+                userButtonAvatarBox:       'w-7 h-7',
               },
             }}
             showName
@@ -69,10 +90,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* ── Main ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-w-0 animate-fade-up">
-        {children}
-      </div>
+      {/* ── Main — offset by sidebar width ────────────────────────────── */}
+      <main className="flex-1 ml-[232px] min-h-screen" style={{ background: 'var(--canvas)' }}>
+        <div className="animate-fade-up">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }

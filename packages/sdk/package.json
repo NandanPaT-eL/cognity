@@ -5,8 +5,8 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch"
+    "build": "../../node_modules/.bin/tsup",
+    "dev": "../../node_modules/.bin/tsup --watch"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/nextjs'
 import {
   Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from 'recharts'
+import { DashboardCard, EmptyState, LoadingDots, PageHeader } from '@/components/dashboard-ui'
 
 type AnalyticsOverview = {
   total_sessions: number
@@ -15,13 +16,13 @@ type AnalyticsOverview = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/v1'
 
-/* ── Custom tooltip ─────────────────────────────────────────────────────── */
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-ink/08 bg-white px-3 py-2 shadow-card text-[12px]">
-      <p className="text-ink/50 mb-0.5 truncate max-w-[200px]">{label}</p>
-      <p className="font-semibold text-ink">{payload[0].value} idle events</p>
+    <div className="rounded-xl px-3 py-2 text-xs border shadow-md"
+         style={{ background: 'var(--canvas)', borderColor: 'var(--border-mid)' }}>
+      <p className="mb-0.5 truncate max-w-[200px]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-semibold" style={{ color: 'var(--void)' }}>{payload[0].value} idle events</p>
     </div>
   )
 }
@@ -50,102 +51,79 @@ export default function AnalyticsPage() {
   })) ?? []
 
   return (
-    <main className="p-10">
-      <div className="max-w-4xl">
+    <div className="cog-page max-w-4xl">
+      <PageHeader
+        eyebrow="Analytics"
+        title="Activation overview"
+        description="See how many users succeed and exactly where they get stuck."
+      />
 
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-lead mb-2">Analytics</p>
-          <h1 className="text-[28px] font-bold text-ink tracking-tight">Activation overview</h1>
-          <p className="mt-1 text-[14px] text-ink/50">See how many users succeed and exactly where they get stuck.</p>
-        </div>
-
-        {!isLoaded ? (
-          <LoadingState label="Authenticating…" />
-        ) : !isSignedIn ? (
-          <EmptyState label="Sign in to view analytics." />
-        ) : loading ? (
-          <LoadingState label="Fetching data…" />
-        ) : data ? (
-          <div className="space-y-6 animate-fade-up">
-
-            {/* Stat cards */}
-            <div className="grid gap-4 sm:grid-cols-3">
-              <StatCard label="Total sessions"     value={data.total_sessions.toString()} />
-              <StatCard label="Activated sessions" value={data.activated_sessions.toString()} />
-              <StatCard
-                label="Activation rate"
-                value={`${Math.round(data.activation_rate * 100)}%`}
-                accent
-              />
-            </div>
-
-            {/* Stuck pages chart */}
-            <div className="rounded-xl border border-ink/08 bg-white p-6 shadow-card">
-              <h2 className="text-[15px] font-semibold text-ink mb-1">Top stuck pages</h2>
-              <p className="text-[12px] text-ink/40 mb-6">Pages where users spent 45+ seconds without acting.</p>
-              {chartData.length > 0 ? (
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} barCategoryGap="40%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(13,13,13,0.06)" vertical={false} />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fontSize: 11, fill: 'rgba(13,13,13,0.4)', fontFamily: 'var(--font-mono)' }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        tick={{ fontSize: 11, fill: 'rgba(13,13,13,0.4)' }}
-                        axisLine={false}
-                        tickLine={false}
-                        width={30}
-                      />
-                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37,99,235,0.04)' }} />
-                      <Bar dataKey="idles" fill="#2563EB" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <EmptyState label="No idle events recorded yet." />
-              )}
-            </div>
+      {!isLoaded ? (
+        <LoadingDots label="Authenticating…" />
+      ) : !isSignedIn ? (
+        <EmptyState label="Sign in to view analytics." />
+      ) : loading ? (
+        <LoadingDots label="Fetching data…" />
+      ) : data ? (
+        <div className="space-y-5 animate-fade-up">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard label="Total sessions"     value={data.total_sessions.toString()} />
+            <StatCard label="Activated sessions" value={data.activated_sessions.toString()} />
+            <StatCard label="Activation rate"    value={`${Math.round(data.activation_rate * 100)}%`} highlight />
           </div>
-        ) : (
-          <EmptyState label="No analytics data yet." />
-        )}
-      </div>
-    </main>
+
+          <DashboardCard>
+            <h2 className="text-[15px] font-bold mb-0.5" style={{ color: 'var(--void)' }}>Top stuck pages</h2>
+            <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
+              Pages where users spent 45+ seconds without acting.
+            </p>
+            {chartData.length > 0 ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} barCategoryGap="40%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(14,11,26,0.06)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: 'rgba(14,11,26,0.35)', fontFamily: 'JetBrains Mono, monospace' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11, fill: 'rgba(14,11,26,0.35)' }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={30}
+                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(124,58,237,0.06)' }} />
+                    <Bar dataKey="idles" fill="#7C3AED" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyState label="No idle events recorded yet." />
+            )}
+          </DashboardCard>
+        </div>
+      ) : (
+        <EmptyState label="No analytics data yet." />
+      )}
+    </div>
   )
 }
 
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="rounded-xl border border-ink/08 bg-white p-6 shadow-card">
-      <p className="text-[12px] font-medium text-ink/40 uppercase tracking-wide">{label}</p>
-      <p className={`mt-2 text-[36px] font-bold tracking-tight leading-none ${accent ? 'text-lead' : 'text-ink'}`}>
+    <div className="cog-card cog-card-hover rounded-2xl p-6">
+      <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p
+        className="text-[32px] font-extrabold tracking-tight leading-none tabular-nums"
+        style={{ color: highlight ? 'var(--purple)' : 'var(--void)' }}
+      >
         {value}
       </p>
     </div>
-  )
-}
-
-function LoadingState({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-2 text-[14px] text-ink/40 py-8">
-      <span className="flex gap-1">
-        {[0,1,2].map(i => (
-          <span key={i} className="w-1.5 h-1.5 rounded-full bg-lead animate-pulse-dot" style={{ animationDelay: `${i * 0.2}s` }} />
-        ))}
-      </span>
-      {label}
-    </div>
-  )
-}
-
-function EmptyState({ label }: { label: string }) {
-  return (
-    <p className="text-[14px] text-ink/40 py-8">{label}</p>
   )
 }

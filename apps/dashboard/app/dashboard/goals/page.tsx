@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { CheckCircle, AlertCircle, Target } from 'lucide-react'
+import { LoadingDots, PageHeader } from '@/components/dashboard-ui'
 
 type ActivationGoal = {
   id: string
@@ -66,103 +67,88 @@ export default function GoalsPage() {
   }
 
   return (
-    <main className="p-10">
-      <div className="max-w-2xl">
+    <div className="cog-page max-w-[560px]">
+      <PageHeader
+        eyebrow="Activation Goal"
+        title="Define success"
+        description="Cognity uses this to know when a user has truly gotten started — and to celebrate with them."
+      />
 
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-lead mb-2">Activation Goal</p>
-          <h1 className="text-[28px] font-bold text-ink tracking-tight">Define success</h1>
-          <p className="mt-1 text-[14px] text-ink/50">
-            Cognity uses this to know when a user has truly gotten started — and to celebrate with them.
-          </p>
-        </div>
-
-        {!isLoaded || status === 'loading' ? (
-          <LoadingDots label={status === 'loading' ? 'Loading goal…' : 'Authenticating…'} />
-        ) : !isSignedIn ? (
-          <p className="text-[14px] text-ink/40">Sign in to configure your activation goal.</p>
-        ) : (
-          <form onSubmit={handleSave} className="space-y-5 animate-fade-up">
-
-            {/* Current goal badge */}
-            {goal && (
-              <div className="flex items-center gap-2 rounded-lg bg-lead/08 border border-lead/20 px-4 py-3">
-                <Target className="h-4 w-4 text-lead shrink-0" />
-                <p className="text-[12px] text-lead font-medium">
-                  Current goal: <span className="font-mono">{goal.event_name}</span>
-                  <span className="text-lead/60 font-normal ml-2">
-                    · saved {new Date(goal.created_at).toLocaleDateString()}
-                  </span>
-                </p>
-              </div>
-            )}
-
-            {/* Event name */}
-            <div>
-              <label htmlFor="event_name" className="mb-1.5 block text-[13px] font-medium text-ink">
-                Event name
-                <span className="ml-2 text-[11px] font-normal text-ink/40">e.g. bot_created, workflow_published</span>
-              </label>
-              <input
-                id="event_name"
-                value={eventName}
-                onChange={e => setEventName(e.target.value)}
-                placeholder="bot_created"
-                className="cog-input font-mono"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="mb-1.5 block text-[13px] font-medium text-ink">
-                Description
-                <span className="ml-2 text-[11px] font-normal text-ink/40">plain English — what did the user just do?</span>
-              </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="User created their first bot and reached the first success moment."
-                rows={4}
-                className="cog-input resize-none"
-              />
-            </div>
-
-            {/* Submit */}
-            <div className="flex items-center gap-4 pt-1">
-              <button
-                type="submit"
-                disabled={status === 'saving'}
-                className="cog-btn-primary"
-              >
-                {status === 'saving' ? 'Saving…' : 'Save goal'}
-              </button>
-              {message && (
-                <span className={`flex items-center gap-1.5 text-[13px] ${message.type === 'success' ? 'text-lead' : 'text-red-600'}`}>
-                  {message.type === 'success'
-                    ? <CheckCircle className="h-4 w-4" />
-                    : <AlertCircle className="h-4 w-4" />}
-                  {message.text}
+      {!isLoaded || status === 'loading' ? (
+        <LoadingDots label={status === 'loading' ? 'Loading goal…' : 'Authenticating…'} />
+      ) : !isSignedIn ? (
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sign in to configure your activation goal.</p>
+      ) : (
+        <form onSubmit={handleSave} className="space-y-6 animate-fade-up">
+          {goal && (
+            <div
+              className="flex items-center gap-2.5 rounded-2xl px-5 py-4"
+              style={{ background: 'var(--mist)', border: '1px solid rgba(124,58,237,0.16)' }}
+            >
+              <Target className="h-4 w-4 shrink-0" style={{ color: 'var(--purple)' }} />
+              <p className="text-[12px] font-medium" style={{ color: 'var(--void)' }}>
+                Current goal:{' '}
+                <span className="font-mono" style={{ color: 'var(--purple)' }}>{goal.event_name}</span>
+                <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
+                  · saved {new Date(goal.created_at).toLocaleDateString()}
                 </span>
-              )}
+              </p>
             </div>
-          </form>
-        )}
-      </div>
-    </main>
-  )
-}
+          )}
 
-function LoadingDots({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-2 text-[14px] text-ink/40 py-8">
-      <span className="flex gap-1">
-        {[0,1,2].map(i => (
-          <span key={i} className="w-1.5 h-1.5 rounded-full bg-lead animate-pulse-dot" style={{ animationDelay: `${i * 0.2}s` }} />
-        ))}
-      </span>
-      {label}
+          <div>
+            <label htmlFor="event_name" className="mb-2 flex items-baseline gap-2 text-[13px] font-semibold"
+                   style={{ color: 'rgba(14,11,26,0.75)' }}>
+              Event name
+              <span className="text-[11px] font-normal" style={{ color: 'var(--text-muted)' }}>
+                e.g. bot_created, workflow_published
+              </span>
+            </label>
+            <input
+              id="event_name"
+              value={eventName}
+              onChange={e => setEventName(e.target.value)}
+              placeholder="bot_created"
+              className="cog-input font-mono"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="description" className="mb-2 flex items-baseline gap-2 text-[13px] font-semibold"
+                   style={{ color: 'rgba(14,11,26,0.75)' }}>
+              Description
+              <span className="text-[11px] font-normal" style={{ color: 'var(--text-muted)' }}>
+                plain English — what did the user just do?
+              </span>
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="User created their first bot and reached the first success moment."
+              rows={4}
+              className="cog-input resize-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 pt-1">
+            <button type="submit" disabled={status === 'saving'} className="cog-btn-primary">
+              {status === 'saving' ? 'Saving…' : 'Save goal'}
+            </button>
+            {message && (
+              <span
+                className="flex items-center gap-1.5 text-[13px] font-medium"
+                style={{ color: message.type === 'success' ? 'var(--purple)' : '#DC2626' }}
+              >
+                {message.type === 'success'
+                  ? <CheckCircle className="h-4 w-4 shrink-0" />
+                  : <AlertCircle className="h-4 w-4 shrink-0" />}
+                {message.text}
+              </span>
+            )}
+          </div>
+        </form>
+      )}
     </div>
   )
 }

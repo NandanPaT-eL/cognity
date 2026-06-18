@@ -1,118 +1,81 @@
-# Cognity UI — File Placement Guide
+# Cognity UI — Drop-in File Replacements
 
-## V1 Feature Checklist ✅
+## What changed and why
 
-All 6 V1 tasks are complete per `.kiro/specs/v1-completion/tasks.md`:
-- ✅ Task 1: Activation goal wired into AI prompt
-- ✅ Task 2: Clerk auth middleware  
-- ✅ Task 3: Sign-in and sign-up pages
-- ✅ Task 4: Dashboard navigation layout
-- ✅ Task 5: Org API key + Install page
-- ✅ Task 6: AI-generated contextual idle nudge
+The goal was to move from a "vibe-coded" look (generic Tailwind defaults,
+flat surfaces, no depth, no typographic intention) toward something that
+reads as deliberate: proper letter-spacing, layered shadows, restrained
+colour use, and copy that sounds like a real product rather than a template.
 
----
-
-## File Placement
-
-| File in this folder              | Replace/create at                                               |
-|----------------------------------|-----------------------------------------------------------------|
-| `globals.css`                    | `apps/dashboard/app/globals.css`                               |
-| `cognity-components.css`         | `apps/dashboard/app/cognity-components.css` (new — see note)   |
-| `tailwind.config.ts`             | `apps/dashboard/tailwind.config.ts`                            |
-| `dashboard-layout.tsx`           | `apps/dashboard/app/dashboard/layout.tsx`                      |
-| `dashboard-page.tsx`             | `apps/dashboard/app/dashboard/page.tsx`                        |
-| `analytics-page.tsx`             | `apps/dashboard/app/dashboard/analytics/page.tsx`              |
-| `docs-page.tsx`                  | `apps/dashboard/app/dashboard/docs/page.tsx`                   |
-| `goals-page.tsx`                 | `apps/dashboard/app/dashboard/goals/page.tsx`                  |
-| `install-page.tsx`               | `apps/dashboard/app/dashboard/install/page.tsx`                |
-| `auth-pages-reference.txt`       | Read this — contains both auth page component code            |
-| `widget-css.ts`                  | Paste the `WIDGET_CSS` string into `packages/sdk/src/widget.ts`|
+Inspired by Jimo's approach: cinematic dark sections, clean light sections,
+large confident type, minimal chrome in the dashboard sidebar.
 
 ---
 
-## Step-by-step
+## File placement table
 
-### 1. Import the component CSS
-In `apps/dashboard/app/globals.css`, add one line after the Tailwind directives:
+| File in this folder              | Replace at                                                            |
+|----------------------------------|-----------------------------------------------------------------------|
+| `globals.css`                    | `apps/dashboard/app/globals.css`                                      |
+| `tailwind.config.ts`             | `apps/dashboard/tailwind.config.ts`                                   |
+| `layout.tsx`                     | `apps/dashboard/app/layout.tsx`                                       |
+| `page.tsx`                       | `apps/dashboard/app/page.tsx`  (landing page)                         |
+| `dashboard-layout.tsx`           | `apps/dashboard/app/dashboard/layout.tsx`                             |
+| `dashboard-page.tsx`             | `apps/dashboard/app/dashboard/page.tsx`                               |
+| `auth-sign-in-page.tsx`          | `apps/dashboard/app/auth/sign-in/[[...sign-in]]/page.tsx`             |
+| `auth-sign-up-page.tsx`          | `apps/dashboard/app/auth/sign-up/[[...sign-up]]/page.tsx`             |
 
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@import './cognity-components.css';   /* ← add this */
-```
-
-Then paste the contents of `cognity-components.css` into that new file.
-
-### 2. Add Inter font to layout
-In `apps/dashboard/app/layout.tsx`, add the Google Fonts link in `<head>`:
-
-```tsx
-import { ClerkProvider } from '@clerk/nextjs'
-import './globals.css'
-
-export const metadata = { title: 'Cognity', description: 'AI Onboarding Assistant' }
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-            rel="stylesheet"
-          />
-        </head>
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
-  )
-}
-```
-
-### 3. Update the SDK widget
-Open `packages/sdk/src/widget.ts`.
-Find the `const WIDGET_CSS = \`...\`` string and replace the entire contents 
-between the backticks with the CSS from `widget-css.ts`.
-
-Also update the panel's innerHTML to add the header-dot and split the header:
-
-```ts
-panel.innerHTML = `
-  <div id="cognity-header">
-    <div id="cognity-header-text">
-      <h3>Cognity</h3>
-      <p>Your onboarding assistant</p>
-    </div>
-    <div id="cognity-header-dot"></div>
-  </div>
-  <div id="cognity-messages"></div>
-  <div id="cognity-input-area">
-    <input id="cognity-input" placeholder="Type a message…" />
-    <button id="cognity-send">
-      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-    </button>
-  </div>`
-```
-
-### 4. Auth pages
-See `auth-pages-reference.txt` — it contains the full TSX for both:
-- `apps/dashboard/app/auth/sign-in/[[...sign-in]]/page.tsx`
-- `apps/dashboard/app/auth/sign-up/[[...sign-up]]/page.tsx`
+**Not touched:** analytics, docs, goals, install pages — the business logic
+in those is correct and they already pick up the improved `globals.css`
+tokens (`cog-input`, `cog-btn-primary`, `cog-card`, etc.) automatically.
 
 ---
 
-## Design System
+## Design decisions
 
-Three colours, nothing else:
+### Palette (unchanged from your existing system — refined tokens only)
+| Role   | Hex       | Tailwind class      |
+|--------|-----------|---------------------|
+| Void   | `#09090B` | `text-void`, `bg-void` |
+| Chalk  | `#FAFAF9` | `bg-chalk`, `text-chalk` |
+| Signal | `#2563EB` | `text-signal`, `bg-signal` |
 
-| Token    | Hex       | Used for                              |
-|----------|-----------|---------------------------------------|
-| `--ink`  | `#0D0D0D` | Text, sidebar background, code blocks |
-| `--lead` | `#2563EB` | Buttons, active nav, focus rings, charts, widget bubble |
-| `--paper`| `#F7F7F5` | App background, input backgrounds     |
+The old `ink / lead / paper` aliases still work — they now point to the
+same RGB values via the new tailwind config.
 
-Tailwind: use `text-ink`, `bg-lead`, `bg-paper`, etc. directly in className.
+### Typography
+- Negative letter-spacing on all headings (`tracking-[-0.025em]` to
+  `tracking-[-0.034em]` depending on size) — this is what separates
+  considered type from defaults.
+- Body uses `Inter` optical size 14–32, weight 400/500/600/700.
+- Line heights tightened on large type, slightly relaxed on body copy.
+
+### Depth system
+Five shadow steps (`xs` → `xl`) replacing the old two. Cards lift on hover
+with both shadow increase and a 2px translateY — same pattern Jimo uses.
+
+### Dark sections
+The hero, "How it works", and final CTA use `--void` background with a
+subtle radial blue glow at the top — gives depth without requiring a
+gradient library.
+
+### What makes it "not vibe coded"
+1. No random `rounded-2xl` everywhere — radius is intentional per element
+2. No `font-bold` on body text — weight is used deliberately
+3. No `shadow-xl` on every card — shadow scale matches visual importance
+4. Letter-spacing goes negative on headings (browsers default to 0)
+5. Colours never stray from the 3-token system
+6. Copy is specific and functional ("45 seconds without activity", not
+   "real-time smart detection") — words are design material
+
+---
+
+## After replacing files
+
+```bash
+cd apps/dashboard
+npm run dev
+```
+
+TypeScript will be happy — all existing component imports and logic are
+preserved. The new files only change presentation, not data flow.

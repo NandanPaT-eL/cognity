@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "SDK_DIST_PATH=../../packages/sdk/dist node --env-file=../../.env ../../node_modules/.bin/tsx watch src/index.ts",
-    "build": "cd ../../packages/sdk && npm run build && cd - && tsup",
+    "build": "cd ../../packages/sdk && ../../node_modules/.bin/tsup && cd - && ../../node_modules/.bin/tsup",
     "start": "node dist/index.js",
     "test": "vitest run --passWithNoTests",
     "lint": "tsc --noEmit",
