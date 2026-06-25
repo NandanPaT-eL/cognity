@@ -10,6 +10,12 @@ export const metadata = {
   title: 'Cognity — AI Onboarding for SaaS',
   description:
     'Replace static product tours with real conversations. Cognity asks each user what they want, guides them to success, and catches them when they get stuck.',
+  alternates: {
+    canonical: 'https://cognity.com.au',
+  },
+  openGraph: {
+    url: 'https://cognity.com.au',
+  },
 }
 
 const logos = ['Workflow.io', 'DataPulse', 'Formly', 'Stackr', 'Pipeloop', 'NovaCRM']
@@ -589,7 +595,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="cog-container pb-8 text-[12px]" style={{ color: 'rgba(14,11,26,0.25)' }}>
-          © {new Date().getFullYear()} Cognity
+          © {new Date().getFullYear()} Cognity · <a href="https://cognity.com.au" className="hover:underline">cognity.com.au</a>
         </div>
       </footer>
     </div>

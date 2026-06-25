@@ -22,7 +22,10 @@ const defaultDashboardOrigins = new Set([
   'http://localhost:3000',
   'http://localhost:3001',
   'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001'
+  'http://127.0.0.1:3001',
+  'https://cognity.com.au',
+  'https://www.cognity.com.au',
+  'https://dashboard.cognity.com.au',
 ])
 const configuredOrigins = new Set(
   (process.env.CORS_ORIGINS ?? '')

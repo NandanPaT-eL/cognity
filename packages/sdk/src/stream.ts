@@ -7,7 +7,7 @@ export async function sendMessage(
   onChunk: (text: string) => void,
   onDone: (messageId: string) => void
 ) {
-  const apiUrl = config.apiUrl ?? 'https://api.cognity.ai'
+  const apiUrl = config.apiUrl ?? 'https://api.cognity.com.au'
   const res = await fetch(`${apiUrl}/v1/sessions/${sessionId}/messages`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },

@@ -3,7 +3,7 @@ import { CognityConfig } from './types'
 const IDLE_THRESHOLD_MS = 45_000
 
 export function initTracker(config: CognityConfig, sessionId: string) {
-  const apiUrl = config.apiUrl ?? 'https://api.cognity.ai'
+  const apiUrl = config.apiUrl ?? 'https://api.cognity.com.au'
   let idleTimer: ReturnType<typeof setTimeout>
   let idleStart: number
 

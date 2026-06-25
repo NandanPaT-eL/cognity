@@ -4,7 +4,7 @@ const SESSION_KEY = 'cognity_session_id'
 
 export async function createOrResumeSession(config: CognityConfig): Promise<Session> {
   const existingId = localStorage.getItem(SESSION_KEY)
-  const apiUrl = config.apiUrl ?? 'https://api.cognity.ai'
+  const apiUrl = config.apiUrl ?? 'https://api.cognity.com.au'
 
   if (existingId) {
     try {
