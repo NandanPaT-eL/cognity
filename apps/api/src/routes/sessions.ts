@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { db } from '../db'
 import { sessions } from '../db/schema'
 import { validateApiKey } from '../lib/auth'
+import { rateLimit } from '../lib/redis'
 
 const CreateSessionSchema = z.object({
   end_user_id: z.string().min(1),
@@ -16,6 +17,10 @@ export async function sessionRoutes(app: FastifyInstance) {
   app.post('/sessions', async (req, reply) => {
     const org = await validateApiKey(req)
     if (!org) return reply.code(401).send({ error: 'Invalid API key' })
+
+    // Rate limit: 10 new sessions per API key per minute
+    const allowed = await rateLimit(`sess:${org.id}`, 10, 60)
+    if (!allowed) return reply.code(429).send({ error: 'Rate limit exceeded', retry_after: 60 })
 
     const body = CreateSessionSchema.parse(req.body)
 

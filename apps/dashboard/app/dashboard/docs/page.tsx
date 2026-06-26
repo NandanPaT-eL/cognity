@@ -14,6 +14,7 @@ export default function DocsPage() {
   const [parsedText, setParsedText]     = useState('')
   const [status, setStatus]             = useState<'idle' | 'saving'>('idle')
   const [message, setMessage]           = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showUpgradeLink, setShowUpgradeLink] = useState(false)
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -30,6 +31,7 @@ export default function DocsPage() {
     }
     setStatus('saving')
     setMessage(null)
+    setShowUpgradeLink(false)
     const token = await getToken()
     const payload = new FormData()
     if (selectedFile) payload.append('file', selectedFile)
@@ -41,7 +43,17 @@ export default function DocsPage() {
       body: payload
     })
     if (!res.ok) {
-      setMessage({ type: 'error', text: 'Failed to save documentation. Please try again.' })
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 402) {
+        setMessage({
+          type: 'error',
+          text: 'Document limit reached for your plan. Upgrade to add more documents.',
+        })
+        setShowUpgradeLink(true)
+      } else {
+        setMessage({ type: 'error', text: 'Failed to save documentation. Please try again.' })
+        setShowUpgradeLink(false)
+      }
       setStatus('idle')
       return
     }
@@ -107,17 +119,33 @@ export default function DocsPage() {
             >
               {status === 'saving' ? 'Saving…' : 'Save documentation'}
             </button>
-            {message && (
-              <span
-                className="flex items-center gap-1.5 text-[13px] font-medium"
-                style={{ color: message.type === 'success' ? 'var(--purple)' : '#DC2626' }}
-              >
-                {message.type === 'success'
-                  ? <CheckCircle className="h-4 w-4 shrink-0" />
-                  : <AlertCircle className="h-4 w-4 shrink-0" />}
-                {message.text}
-              </span>
-            )}
+            <div>
+              {message && (
+                <span
+                  className="flex items-center gap-1.5 text-[13px] font-medium"
+                  style={{ color: message.type === 'success' ? 'var(--purple)' : '#DC2626' }}
+                >
+                  {message.type === 'success'
+                    ? <CheckCircle className="h-4 w-4 shrink-0" />
+                    : <AlertCircle className="h-4 w-4 shrink-0" />}
+                  {message.text}
+                </span>
+              )}
+              {showUpgradeLink && (
+                <a
+                  href="/#pricing"
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--purple)',
+                    textDecoration: 'underline',
+                    display: 'block',
+                    marginTop: '6px',
+                  }}
+                >
+                  View upgrade options →
+                </a>
+              )}
+            </div>
           </div>
         </form>
       )}

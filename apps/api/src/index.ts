@@ -4,6 +4,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
 import staticFiles from '@fastify/static'
+import rawBody from 'fastify-raw-body'
 import { clerkPlugin } from '@clerk/fastify'
 import { sessionRoutes } from './routes/sessions'
 import { messageRoutes } from './routes/messages'
@@ -12,10 +13,23 @@ import { goalRoutes } from './routes/goals'
 import { documentRoutes } from './routes/documents'
 import { analyticsRoutes } from './routes/analytics'
 import { orgRoutes } from './routes/org'
+import { billingRoutes, webhookRoutes } from './routes/billing'
+import inngestFastify from 'inngest/fastify'
+import { inngest } from './lib/inngest'
+import { processDocument } from './services/embeddings'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const app = Fastify({ logger: true })
+
+// ─── Raw body — required for Stripe webhook signature verification ────────
+// Must be registered before any route that reads req.body, so it runs first.
+await app.register(rawBody, {
+  field:    'rawBody',
+  global:   false,   // only opt-in per route via config.rawBody = true
+  encoding: false,   // keep as Buffer
+  runFirst: true,
+})
 
 // ─── Allowed origins for dashboard routes ────────────────────────────────
 const defaultDashboardOrigins = new Set([
@@ -70,6 +84,20 @@ app.register(multipart, {
   }
 })
 
+// ─── Stripe webhook — public route (no dashboard origin check) ────────────
+// Must be before the dashboard scope so it's not blocked by the origin hook.
+app.register(async (webhookApp) => {
+  webhookApp.register(webhookRoutes, { prefix: '/v1' })
+}, { prefix: '' })
+
+// ─── Inngest — background job handler (document embeddings) ───────────────
+// Inngest Cloud POSTs here to execute registered functions.
+// Deploy docs: point Inngest app to https://your-api.railway.app/api/inngest
+app.register(inngestFastify, {
+  client: inngest,
+  functions: [processDocument],
+})
+
 // ─── Dashboard routes (Clerk JWT + origin-restricted) ────────────────────
 app.register(async (dashApp) => {
   dashApp.addHook('onRequest', async (req, reply) => {
@@ -83,6 +111,7 @@ app.register(async (dashApp) => {
   dashApp.register(documentRoutes,  { prefix: '/v1' })
   dashApp.register(analyticsRoutes, { prefix: '/v1' })
   dashApp.register(orgRoutes,       { prefix: '/v1' })
+  dashApp.register(billingRoutes,   { prefix: '/v1' })
 })
 
 // ─── SDK / public routes (any origin) ────────────────────────────────────

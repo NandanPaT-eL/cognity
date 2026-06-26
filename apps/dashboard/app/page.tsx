@@ -1,22 +1,17 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
+import { useAuth } from '@clerk/nextjs'
 import {
   ArrowRight, Check, X, MessageSquare, Zap, BarChart2,
   BookOpen, Code2, Target, Sparkles, Clock, Users,
 } from 'lucide-react'
 import { ChatDemo } from '@/components/landing/chat-demo'
+import { CookieBanner } from '@/components/cookie-banner'
 
-export const metadata = {
-  title: 'Cognity — AI Onboarding for SaaS',
-  description:
-    'Replace static product tours with real conversations. Cognity asks each user what they want, guides them to success, and catches them when they get stuck.',
-  alternates: {
-    canonical: 'https://cognity.com.au',
-  },
-  openGraph: {
-    url: 'https://cognity.com.au',
-  },
-}
+
 
 const logos = ['Workflow.io', 'DataPulse', 'Formly', 'Stackr', 'Pipeloop', 'NovaCRM']
 
@@ -78,63 +73,103 @@ const faqs = [
 ]
 
 const pricingPlans = [
-  { 
-    name: 'Starter Plan', 
+  {
+    name: 'Starter',
     subtitle: 'For solo builders and small projects',
-    price: '39AUD',  
-    period: '/mo',   
+    price: '$39',
+    period: 'AUD / mo',
+    planKey: 'starter',
     features: [
-      '1,000 Intent capture / month', 
-      '2,000 Stuck-user detection / month', 
-      '5,000 MAU (Monthly Active User Tracked) / month', 
-      '2,000 Triggers (user intercatis with Cognity AI) / month', 
-      '3 Team members', 
-      '3 Integrations', 
-      'Ongoing guidance', 
-      'Basic analytic dashboard', 
-      'Cognity branding'
-    ], 
-    cta: 'Start free trial (after Beta)',   
-    highlighted: false 
+      '1,000 intent captures / month',
+      '2,000 stuck-user detections / month',
+      '5,000 MAU tracked / month',
+      '2,000 triggers / month',
+      '3 team members · 3 integrations',
+      'Ongoing guidance · basic analytics',
+      'Cognity branding',
+    ],
+    cta: 'Subscribe to Starter',
+    highlighted: false,
   },
-  { 
-    name: 'Growth Plan',  
+  {
+    name: 'Growth',
     subtitle: 'For growing teams scaling their product',
-    price: '99AUD',   
-    period: '/mo',   
+    price: '$99',
+    period: 'AUD / mo',
+    planKey: 'growth',
     features: [
-      '5,000 Intent capture / month', 
-      '10,000 Stuck-user detection / month', 
-      '25,000 MAU (Monthly Active User Tracked) / month', 
-      '10,000 Triggers (user intercatis with Cognity AI) / month', 
-      '10 Team members', 
-      'Unlimited Integrations', 
-      'Ongoing guidance', 
-      'Advanced analytic dashboard', 
-      'Your own branding and customisable themes',
-      'Micro surveys'
-    ],        
-    cta: 'Start free trial (after Beta)',  
-    highlighted: true  
+      '5,000 intent captures / month',
+      '10,000 stuck-user detections / month',
+      '25,000 MAU tracked / month',
+      '10,000 triggers / month',
+      '10 team members · unlimited integrations',
+      'Advanced analytics · your branding',
+      'Micro surveys',
+    ],
+    cta: 'Subscribe to Growth',
+    highlighted: true,
   },
-  { 
-    name: 'Enterprise',   
-    subtitle: 'Contact us for larger teams or custom requirements, we can put together a plan that fits your needs.',
-    price: '',  
-    period: '',   
-    features: [],                          
-    cta: 'Contact us',   
-    highlighted: false 
+  {
+    name: 'Enterprise',
+    subtitle: 'Custom limits, SSO, and dedicated support for larger teams.',
+    price: 'Custom',
+    period: '',
+    planKey: null,
+    features: [
+      'Unlimited usage tiers',
+      'Custom integrations & SLAs',
+      'Dedicated onboarding support',
+    ],
+    cta: 'Contact us',
+    highlighted: false,
   },
 ]
 
 export default function LandingPage() {
+  const { isSignedIn, getToken } = useAuth()
+  const [buyingPlan, setBuyingPlan] = useState<string | null>(null)
+  const [buyError, setBuyError] = useState<string | null>(null)
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/v1'
+
+  const handlePlanClick = async (planKey: string | null) => {
+    if (!planKey) return // Enterprise - handled by link
+    setBuyingPlan(planKey)
+    setBuyError(null)
+    if (!isSignedIn) {
+      window.location.href = `/auth/sign-up?redirect=/dashboard`
+      return
+    }
+    try {
+      const token = await getToken()
+      const res = await fetch(`${apiUrl}/billing/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ plan: planKey }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error((data as { error?: string }).error ?? 'Failed to start checkout')
+      }
+      const { url } = await res.json() as { url: string }
+      window.location.href = url
+    } catch (err) {
+      setBuyError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setBuyingPlan(null)
+    }
+  }
+
   return (
     <div className="min-h-screen font-sans overflow-x-hidden" style={{ background: 'var(--canvas)' }}>
 
       {/* ── Top Banner ──────────────────────────────────────────────── */}
       <div className="absolute top-0 inset-x-0 z-[60] py-2.5 text-center text-[13px] font-medium" style={{ background: 'var(--purple)', color: '#fff' }}>
-        $75 Lifetime deal while in Beta
+        <a href="#pricing" style={{ color: '#fff', textDecoration: 'none' }}>
+          $75 AUD one-time · Beta only →
+        </a>
       </div>
 
       {/* ── Floating nav ──────────────────────────────────────────────── */}
@@ -206,6 +241,10 @@ export default function LandingPage() {
                   For the first 50 teams
                 </span>
               </div>
+              <p className="text-[12px] mt-1.5 leading-relaxed"
+                 style={{ color: 'var(--text-muted)' }}>
+                Grandfathered onto Growth plan after launch — no recurring fees ever.
+              </p>
 
               <h1
                 className="text-[44px] sm:text-[52px] lg:text-[56px] font-extrabold tracking-[-0.04em] leading-[1.04]"
@@ -458,22 +497,34 @@ export default function LandingPage() {
 
       {/* ── Pricing ───────────────────────────────────────────────────── */}
       <section id="pricing" className="cog-container py-28">
-        <div className="text-center mb-14">
+        <div className="text-center mb-10">
           <span className="cog-eyebrow">Pricing</span>
           <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>
             Simple, transparent pricing.
           </h2>
+          <p className="mt-4 text-[15px] max-w-lg mx-auto" style={{ color: 'var(--text-soft)' }}>
+            Beta teams can lock in the{' '}
+            <button
+              type="button"
+              onClick={() => handlePlanClick('lifetime')}
+              disabled={buyingPlan === 'lifetime'}
+              className="font-semibold underline-offset-2 hover:underline"
+              style={{ color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              $75 AUD lifetime deal
+            </button>
+            {' '}— grandfathered onto Growth after launch.
+          </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
           {pricingPlans.map(plan => (
             <div
               key={plan.name}
-              className="rounded-[24px] p-8 flex flex-col"
+              className="rounded-[24px] p-8 flex flex-col h-full"
               style={plan.highlighted
                 ? {
                     background: 'var(--purple)',
-                    boxShadow: '0 8px 32px rgba(124,58,237,0.30)',
-                    transform: 'scale(1.02)',
+                    boxShadow: '0 12px 40px rgba(124,58,237,0.28)',
                   }
                 : {
                     border: '1px solid rgba(14,11,26,0.08)',
@@ -482,59 +533,89 @@ export default function LandingPage() {
               }
             >
               {plan.highlighted && (
-                <span className="self-start text-[10px] font-bold uppercase tracking-wider mb-4" style={{ color: '#DDD6FE' }}>
+                <span
+                  className="self-start text-[10px] font-bold uppercase tracking-wider mb-4 px-2.5 py-1 rounded-full"
+                  style={{ color: 'var(--purple)', background: '#fff' }}
+                >
                   Most popular
                 </span>
               )}
-              <h3 className="text-[20px] font-bold mb-2"
-                 style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}>
+              <h3
+                className="text-[22px] font-bold mb-2"
+                style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}
+              >
                 {plan.name}
               </h3>
-              <p className="text-[14px] leading-relaxed mb-6 min-h-[3rem]"
-                 style={{ color: plan.highlighted ? 'rgba(255,255,255,0.7)' : 'var(--text-soft)' }}>
+              <p
+                className="text-[14px] leading-relaxed mb-6 min-h-[2.75rem]"
+                style={{ color: plan.highlighted ? 'rgba(255,255,255,0.72)' : 'var(--text-soft)' }}
+              >
                 {plan.subtitle}
               </p>
 
-              {plan.price && (
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-[32px] font-bold" style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}>
-                    {plan.price}
-                  </span>
-                  <span className="text-[14px] font-medium" style={{ color: plan.highlighted ? 'rgba(255,255,255,0.7)' : 'var(--text-soft)' }}>
+              <div className="mb-6 flex items-baseline gap-1.5">
+                <span
+                  className="text-[36px] font-extrabold tracking-[-0.03em]"
+                  style={{ color: plan.highlighted ? '#fff' : 'var(--void)' }}
+                >
+                  {plan.price}
+                </span>
+                {plan.period && (
+                  <span
+                    className="text-[13px] font-medium"
+                    style={{ color: plan.highlighted ? 'rgba(255,255,255,0.65)' : 'var(--text-soft)' }}
+                  >
                     {plan.period}
                   </span>
-                </div>
-              )}
+                )}
+              </div>
 
-              <Link
-                href="/auth/sign-up"
-                className={`w-full flex justify-center text-center mb-8 ${plan.highlighted ? 'cog-plan-cta cog-plan-cta--dark' : 'cog-plan-cta cog-plan-cta--light'} ${plan.features.length === 0 ? 'mt-auto' : ''}`}
+              <p
+                className="text-[11px] font-bold uppercase tracking-wider mb-4"
+                style={{ color: plan.highlighted ? 'rgba(255,255,255,0.9)' : 'var(--text-muted)' }}
               >
-                {plan.cta}
-              </Link>
+                What&apos;s included
+              </p>
+              <ul className="space-y-3 mb-8 flex-1">
+                {plan.features.map(f => (
+                  <li key={f} className="flex items-start gap-2.5 text-[13px]">
+                    <Check
+                      className="h-4 w-4 shrink-0 mt-0.5"
+                      style={{ color: plan.highlighted ? '#DDD6FE' : 'var(--purple)' }}
+                      strokeWidth={2.5}
+                    />
+                    <span style={{ color: plan.highlighted ? 'rgba(255,255,255,0.88)' : 'var(--text-soft)' }}>
+                      {f}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-              {plan.features.length > 0 && (
-                <>
-                  <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: plan.highlighted ? 'rgba(255,255,255,0.9)' : 'var(--void)' }}>
-                    WHAT&apos;S INCLUDED
-                  </p>
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map(f => (
-                      <li key={f} className="flex items-start gap-2.5 text-[13px]">
-                        <Check
-                          className="h-4 w-4 shrink-0 mt-0.5"
-                          style={{ color: plan.highlighted ? '#DDD6FE' : 'var(--purple)' }}
-                          strokeWidth={2.5}
-                        />
-                        <span style={{ color: plan.highlighted ? 'rgba(255,255,255,0.85)' : 'var(--text-soft)' }}>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
+              {plan.planKey ? (
+                <button
+                  onClick={() => handlePlanClick(plan.planKey)}
+                  disabled={buyingPlan === plan.planKey}
+                  className={`w-full flex justify-center text-center mt-auto ${plan.highlighted ? 'cog-plan-cta cog-plan-cta--dark' : 'cog-plan-cta cog-plan-cta--light'}`}
+                  style={{ cursor: buyingPlan === plan.planKey ? 'not-allowed' : 'pointer', opacity: buyingPlan === plan.planKey ? 0.7 : 1, border: 'none' }}
+                >
+                  {buyingPlan === plan.planKey ? 'Redirecting…' : plan.cta}
+                </button>
+              ) : (
+                <a
+                  href="mailto:support@cognity.com.au"
+                  className="w-full flex justify-center text-center mt-auto cog-plan-cta cog-plan-cta--light"
+                >
+                  {plan.cta}
+                </a>
               )}
             </div>
           ))}
         </div>
+        {buyError && (
+          <p style={{ textAlign: 'center', color: '#dc2626', fontSize: '13px', marginTop: '16px' }}>
+            {buyError}
+          </p>
+        )}
       </section>
 
       {/* ── Final CTA ─────────────────────────────────────────────────── */}
@@ -570,7 +651,7 @@ export default function LandingPage() {
       {/* ── Footer ────────────────────────────────────────────────────── */}
       <footer style={{ borderTop: '1px solid rgba(14,11,26,0.08)', background: 'var(--canvas)' }}>
         <div className="cog-container py-14 grid sm:grid-cols-4 gap-10">
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-1">
             <p className="text-[18px] font-bold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>cognity</p>
             <p className="mt-3 text-[13px] max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               AI onboarding that guides every user to their first success moment.
@@ -593,11 +674,27 @@ export default function LandingPage() {
                     style={{ color: 'var(--text-soft)' }}>Sign up</Link>
             </div>
           </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>Legal</p>
+            <div className="flex flex-col gap-2.5">
+              <Link href="/privacy" className="text-[14px] font-medium transition-colors"
+                    style={{ color: 'var(--text-soft)' }}>Privacy Policy</Link>
+              <Link href="/terms" className="text-[14px] font-medium transition-colors"
+                    style={{ color: 'var(--text-soft)' }}>Terms of Service</Link>
+            </div>
+          </div>
         </div>
-        <div className="cog-container pb-8 text-[12px]" style={{ color: 'rgba(14,11,26,0.25)' }}>
-          © {new Date().getFullYear()} Cognity · <a href="https://cognity.com.au" className="hover:underline">cognity.com.au</a>
+        <div className="cog-container pb-8 flex flex-wrap items-center justify-between gap-4 text-[12px]" style={{ color: 'rgba(14,11,26,0.25)' }}>
+          <span>© {new Date().getFullYear()} Cognity Pty Ltd &nbsp;·&nbsp; <a href="https://cognity.com.au" className="hover:underline">cognity.com.au</a></span>
+          <span className="flex gap-4">
+            <Link href="/privacy" className="hover:underline">Privacy</Link>
+            <Link href="/terms" className="hover:underline">Terms</Link>
+          </span>
         </div>
       </footer>
+
+      {/* Cookie / data notice banner — appears for first-time visitors */}
+      <CookieBanner />
     </div>
   )
 }

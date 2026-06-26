@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
-import { LayoutDashboard, BarChart2, BookOpen, Target, Code } from 'lucide-react'
+import { LayoutDashboard, BarChart2, BookOpen, Target, Code, Settings } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard',           label: 'Overview',        icon: LayoutDashboard, exact: true  },
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/dashboard/docs',      label: 'Documentation',   icon: BookOpen,        exact: false },
   { href: '/dashboard/goals',     label: 'Activation Goal', icon: Target,          exact: false },
   { href: '/dashboard/install',   label: 'Install',         icon: Code,            exact: false },
+  { href: '/dashboard/settings',  label: 'Settings',        icon: Settings,        exact: false },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

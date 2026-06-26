@@ -6,7 +6,7 @@ export async function sendMessage(
   content: string,
   onChunk: (text: string) => void,
   onDone: (messageId: string) => void
-) {
+): Promise<{ limitReached: true; message?: string } | void> {
   const apiUrl = config.apiUrl ?? 'https://api.cognity.com.au'
   const res = await fetch(`${apiUrl}/v1/sessions/${sessionId}/messages`, {
     method: 'POST',
@@ -14,11 +14,16 @@ export async function sendMessage(
     body: JSON.stringify({ content })
   })
 
+  if (res.status === 402) {
+    const data = await res.json().catch(() => ({})) as { error?: string }
+    return { limitReached: true, message: data.error ?? 'Monthly limit reached' }
+  }
+
   if (!res.ok || !res.body) {
     throw new Error(`Cognity message request failed with status ${res.status}`)
   }
 
-  const reader = res.body!.getReader()
+  const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
 

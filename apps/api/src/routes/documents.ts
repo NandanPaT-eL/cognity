@@ -1,10 +1,11 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { desc } from 'drizzle-orm'
+import { desc, count, eq } from 'drizzle-orm'
 import { db } from '../db'
 import { documents } from '../db/schema'
 import { validateClerkJWT } from '../lib/auth'
 import { inngest } from '../lib/inngest'
+import { getLimits } from '../lib/plan-limits'
 
 const CreateDocumentSchema = z.object({
   file_name: z.string().min(1).max(255),
@@ -27,7 +28,33 @@ export async function documentRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: error instanceof Error ? error.message : 'Invalid document payload' })
     }
 
-    const { fileName, parsedText, sourceType } = payload
+    const { fileName, parsedText: rawText, sourceType } = payload
+
+    // ─── Document count limit ──────────────────────────────────────────────
+    const limits = getLimits(org.plan)
+    if (limits.documents !== -1) {
+      const [{ total }] = await db
+        .select({ total: count() })
+        .from(documents)
+        .where(eq(documents.org_id, org.id))
+      if (Number(total) >= limits.documents) {
+        return reply.code(402).send({
+          error: 'Document limit reached',
+          upgrade_url: 'https://cognity.com.au/#pricing',
+        })
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────
+
+    // ─── Sanitize parsed_text ──────────────────────────────────────────────
+    // 1. Trim to 500,000 characters to keep embeddings within Pinecone limits.
+    // 2. Strip null bytes (\x00) and control chars < 0x20 except \n \r \t.
+    const parsedText = rawText
+      .slice(0, 500_000)
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00\x01-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    // ──────────────────────────────────────────────────────────────────────
+
     const fileUrl = `${sourceType}://${encodeURIComponent(fileName)}`
 
     const [doc] = await db.insert(documents).values({

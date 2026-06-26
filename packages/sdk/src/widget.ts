@@ -1,7 +1,7 @@
 const WIDGET_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
   #cognity-bubble { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px;
-    border-radius: 50%; background: #1E40AF; cursor: pointer; display: flex;
+    border-radius: 50%; background: #7C3AED; cursor: pointer; display: flex;
     align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: transform 0.2s; z-index: 9999; }
   #cognity-bubble:hover { transform: scale(1.08); }
@@ -11,18 +11,18 @@ const WIDGET_CSS = `
     display: flex; flex-direction: column; overflow: hidden; z-index: 9998;
     transition: opacity 0.2s, transform 0.2s; }
   #cognity-panel.hidden { opacity: 0; pointer-events: none; transform: translateY(8px); }
-  #cognity-header { background: #1E40AF; padding: 16px; color: white; }
+  #cognity-header { background: #7C3AED; padding: 16px; color: white; }
   #cognity-header h3 { font-size: 15px; font-weight: 600; }
   #cognity-header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
   #cognity-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
   .msg.assistant { background: #F1F5F9; color: #1E293B; align-self: flex-start; border-bottom-left-radius: 4px; }
-  .msg.user { background: #1E40AF; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .msg.user { background: #7C3AED; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
   #cognity-input-area { padding: 12px; border-top: 1px solid #E2E8F0; display: flex; gap: 8px; }
   #cognity-input { flex: 1; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 24px;
     font-size: 14px; outline: none; }
-  #cognity-input:focus { border-color: #1E40AF; }
-  #cognity-send { background: #1E40AF; border: none; border-radius: 50%; width: 38px; height: 38px;
+  #cognity-input:focus { border-color: #7C3AED; }
+  #cognity-send { background: #7C3AED; border: none; border-radius: 50%; width: 38px; height: 38px;
     cursor: pointer; display: flex; align-items: center; justify-content: center; }
   #cognity-send svg { width: 16px; height: 16px; fill: white; }
 `

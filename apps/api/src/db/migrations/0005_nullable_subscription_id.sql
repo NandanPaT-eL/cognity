@@ -1,0 +1,1 @@
+ALTER TABLE "organizations" ALTER COLUMN "stripe_subscription_id" DROP NOT NULL;
