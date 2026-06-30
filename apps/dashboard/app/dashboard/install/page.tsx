@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { Eye, EyeOff, Copy, Check, RefreshCw, AlertTriangle } from 'lucide-react'
@@ -120,9 +121,9 @@ const apiKey = import.meta.env.VITE_COGNITY_API_KEY
 const sdkUrl = import.meta.env.VITE_COGNITY_SDK_URL
 
 if (apiKey && sdkUrl) {
-  window.__COGNITY_API_KEY__ = apiKey
   const script = document.createElement('script')
   script.src = \`\${sdkUrl}/sdk/index.js\`
+  script.dataset.key = apiKey
   script.defer = true
   document.body.appendChild(script)
 }`
@@ -131,10 +132,7 @@ if (apiKey && sdkUrl) {
 COGNITY_API_KEY=<paste your key from the dashboard>
 
 <!-- Inject the key at build/deploy time — do not hardcode in source -->
-<script>
-  window.__COGNITY_API_KEY__ = process.env.COGNITY_API_KEY
-</script>
-<script src="${sdkBase}/sdk/index.js" defer></script>`
+<script src="${sdkBase}/sdk/index.js" data-key="${org.api_key}" defer></script>`
 
     return { nextjs, vite, html }
   }, [org, sdkBase])
@@ -359,6 +357,15 @@ COGNITY_API_KEY=<paste your key from the dashboard>
               onCopy={() => copy(activeSnippet, setSnippetCopied)}
               copied={snippetCopied}
             />
+            <Callout>
+              <p className="text-xs" style={{ color: 'var(--text-soft)' }}>
+                Set your allowed domain in{' '}
+                <Link href="/dashboard/settings" className="font-semibold" style={{ color: 'var(--purple)' }}>
+                  Settings → Security
+                </Link>{' '}
+                to prevent API key misuse.
+              </p>
+            </Callout>
           </DashboardCard>
 
           <Callout>

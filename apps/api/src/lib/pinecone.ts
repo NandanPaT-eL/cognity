@@ -3,7 +3,7 @@ import { Pinecone } from '@pinecone-database/pinecone'
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! })
 export const index = pc.index(process.env.PINECONE_INDEX_NAME ?? 'cognity-docs')
 
-export async function querySimilar(vector: number[], orgId: string, topK = 5) {
+export async function querySimilar(vector: number[], orgId: string, topK = 3) {
   const results = await index.query({
     vector,
     topK,

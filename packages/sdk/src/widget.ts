@@ -1,4 +1,5 @@
 const WIDGET_CSS = `
+  :host { all: initial; }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
   #cognity-bubble { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px;
     border-radius: 50%; background: #7C3AED; cursor: pointer; display: flex;
@@ -14,7 +15,7 @@ const WIDGET_CSS = `
   #cognity-header { background: #7C3AED; padding: 16px; color: white; }
   #cognity-header h3 { font-size: 15px; font-weight: 600; }
   #cognity-header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
-  #cognity-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  #cognity-messages { flex: 1; overflow-y: scroll !important; overscroll-behavior: contain; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
   .msg.assistant { background: #F1F5F9; color: #1E293B; align-self: flex-start; border-bottom-left-radius: 4px; }
   .msg.user { background: #7C3AED; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
@@ -48,9 +49,16 @@ export function renderWidget(openingMessage: string, onSend: (msg: string) => vo
 
   const panel = document.createElement('div')
   panel.id = 'cognity-panel'
-  panel.classList.add('hidden')
   panel.innerHTML = `
-    <div id="cognity-header"><h3>Cognity</h3><p>Your onboarding assistant</p></div>
+    <div id="cognity-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h3>Cognity</h3>
+          <p>Your onboarding assistant</p>
+        </div>
+        <button id="cognity-close" style="background:none;border:none;cursor:pointer;color:white;font-size:20px;line-height:1;padding:0 4px;opacity:0.8">✕</button>
+      </div>
+    </div>
     <div id="cognity-messages"></div>
     <div id="cognity-input-area">
       <input id="cognity-input" placeholder="Type a message..." />
@@ -59,6 +67,7 @@ export function renderWidget(openingMessage: string, onSend: (msg: string) => vo
   shadow.appendChild(panel)
 
   const messagesEl = shadow.getElementById('cognity-messages')!
+  const closeBtn = shadow.getElementById('cognity-close')!
   const input = shadow.getElementById('cognity-input') as HTMLInputElement
   const sendBtn = shadow.getElementById('cognity-send')!
 
@@ -66,6 +75,7 @@ export function renderWidget(openingMessage: string, onSend: (msg: string) => vo
   addMsg('assistant', openingMessage)
 
   bubble.addEventListener('click', () => panel.classList.toggle('hidden'))
+  closeBtn.addEventListener('click', () => panel.classList.add('hidden'))
 
   const handleSend = () => {
     const val = input.value.trim()

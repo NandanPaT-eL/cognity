@@ -108,21 +108,39 @@ export async function messageRoutes(app: FastifyInstance) {
     // ──────────────────────────────────────────────────────────────────────
 
     // Stream AI response via SSE
+    reply.hijack()
+    const origin = req.headers.origin
+    if (origin) {
+      reply.raw.setHeader('Access-Control-Allow-Origin', origin)
+      reply.raw.setHeader('Vary', 'Origin')
+    }
+    reply.raw.setHeader('Access-Control-Allow-Credentials', 'true')
+    reply.raw.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+    reply.raw.setHeader('Access-Control-Expose-Headers', 'Content-Type')
     reply.raw.setHeader('Content-Type', 'text/event-stream')
     reply.raw.setHeader('Cache-Control', 'no-cache')
     reply.raw.setHeader('Connection', 'keep-alive')
 
-    const { stream, messageId } = await generateAIResponse({
-      session,
-      userMessage: body.content,
-      orgId: org.id
-    })
+    try {
+      const { stream, messageId } = await generateAIResponse({
+        session,
+        userMessage: body.content,
+        orgId: org.id
+      })
 
-    for await (const chunk of stream) {
-      reply.raw.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`)
+      for await (const chunk of stream) {
+        reply.raw.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`)
+      }
+
+      reply.raw.write(`data: ${JSON.stringify({ done: true, message_id: messageId })}\n\n`)
+    } catch (error) {
+      req.log.error({ err: error }, 'message stream failed')
+      reply.raw.write(`data: ${JSON.stringify({
+        error: true,
+        message: error instanceof Error ? error.message : 'AI request failed'
+      })}\n\n`)
+    } finally {
+      reply.raw.end()
     }
-
-    reply.raw.write(`data: ${JSON.stringify({ done: true, message_id: messageId })}\n\n`)
-    reply.raw.end()
   })
 }

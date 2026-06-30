@@ -1,4 +1,4 @@
-import { geminiChat } from '../lib/gemini'
+import { generateChatContent } from '../lib/gemini'
 
 interface StuckOptions {
   sessionId: string
@@ -25,7 +25,7 @@ export async function detectStuck({ sessionId, pagePath, idleSeconds, goalText }
 They have been idle on the "${pageLabel}" page for 45 seconds.
 Write one short, friendly sentence (max 20 words) offering help. Do not mention AI or documentation.`
 
-    const result = await geminiChat.generateContent(prompt)
+    const result = await generateChatContent(prompt)
     const text = result.response.text().trim()
     return text || staticFallback
   } catch {

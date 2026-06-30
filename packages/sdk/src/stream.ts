@@ -19,6 +19,13 @@ export async function sendMessage(
     return { limitReached: true, message: data.error ?? 'Monthly limit reached' }
   }
 
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => '')
+    throw new Error(
+      `Cognity message request failed with status ${res.status}${errorBody ? `: ${errorBody}` : ''}`
+    )
+  }
+
   if (!res.ok || !res.body) {
     throw new Error(`Cognity message request failed with status ${res.status}`)
   }
@@ -40,6 +47,9 @@ export async function sendMessage(
       const dataLine = event.split('\n').find((line) => line.startsWith('data: '))
       if (dataLine) {
         const json = JSON.parse(dataLine.replace('data: ', ''))
+        if (json.error) {
+          throw new Error(json.message ?? 'Cognity stream failed')
+        }
         if (json.delta) onChunk(json.delta)
         if (json.done) onDone(json.message_id)
       }
@@ -53,6 +63,9 @@ export async function sendMessage(
     const dataLine = buffer.split('\n').find((line) => line.startsWith('data: '))
     if (dataLine) {
       const json = JSON.parse(dataLine.replace('data: ', ''))
+      if (json.error) {
+        throw new Error(json.message ?? 'Cognity stream failed')
+      }
       if (json.delta) onChunk(json.delta)
       if (json.done) onDone(json.message_id)
     }

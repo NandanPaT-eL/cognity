@@ -7,15 +7,25 @@ import type { CognityConfig } from './types'
 declare global {
   interface Window {
     __COGNITY_API_KEY__?: string
+    __COGNITY_API_URL__?: string
     cognity?: { activate: (goalEvent: string) => void }
   }
 }
 
-function resolveApiKey(): string | null {
+function resolveConfig(): CognityConfig | null {
   const script = document.currentScript as HTMLScriptElement | null
-  if (script?.dataset.key) return script.dataset.key
-  if (window.__COGNITY_API_KEY__) return window.__COGNITY_API_KEY__
-  return null
+  let apiKey = script?.dataset.key || window.__COGNITY_API_KEY__
+  let apiUrl = script?.dataset.apiUrl || window.__COGNITY_API_URL__
+
+  if (!apiUrl && script?.src) {
+    try {
+      const url = new URL(script.src)
+      apiUrl = `${url.protocol}//${url.host}`
+    } catch {}
+  }
+
+  if (!apiKey) return null
+  return { apiKey, apiUrl }
 }
 
 async function boot(config: CognityConfig) {
@@ -54,21 +64,24 @@ async function boot(config: CognityConfig) {
           "You've reached your monthly limit. Please ask your team to upgrade at cognity.com.au"
         )
       }
-    } catch {
-      widget.addMessage('assistant', 'Sorry, something went wrong. Please try again.')
+    } catch (error) {
+      widget.addMessage(
+        'assistant',
+        error instanceof Error ? error.message : 'Sorry, something went wrong. Please try again.'
+      )
     }
   }
 }
 
 async function init() {
-  const apiKey = resolveApiKey()
-  if (!apiKey) {
+  const config = resolveConfig()
+  if (!config) {
     console.error('[Cognity] Missing API key — set COGNITY_API_KEY in .env and pass it via data-key or window.__COGNITY_API_KEY__')
     return
   }
 
   try {
-    await boot({ apiKey })
+    await boot(config)
   } catch (err) {
     console.error('[Cognity] Initialization error', err)
   }
