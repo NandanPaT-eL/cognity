@@ -14,6 +14,8 @@ import { documentRoutes } from './routes/documents'
 import { analyticsRoutes } from './routes/analytics'
 import { orgRoutes } from './routes/org'
 import { billingRoutes, webhookRoutes } from './routes/billing'
+import { tourRoutes, publicTourRoutes } from './routes/tours'
+import { expireOverduePlans } from './lib/expire-plans'
 import inngestFastify from 'inngest/fastify'
 import { inngest } from './lib/inngest'
 import { processDocument } from './services/embeddings'
@@ -112,12 +114,14 @@ app.register(async (dashApp) => {
   dashApp.register(analyticsRoutes, { prefix: '/v1' })
   dashApp.register(orgRoutes,       { prefix: '/v1' })
   dashApp.register(billingRoutes,   { prefix: '/v1' })
+  dashApp.register(tourRoutes,      { prefix: '/v1' })
 })
 
 // ─── SDK / public routes (any origin) ────────────────────────────────────
-app.register(sessionRoutes,  { prefix: '/v1' })
-app.register(messageRoutes,  { prefix: '/v1' })
-app.register(eventRoutes,    { prefix: '/v1' })
+app.register(sessionRoutes,     { prefix: '/v1' })
+app.register(messageRoutes,     { prefix: '/v1' })
+app.register(eventRoutes,       { prefix: '/v1' })
+app.register(publicTourRoutes,  { prefix: '/v1' })
 
 // ─── Health check ────────────────────────────────────────────────────────
 app.get('/health', async () => ({ status: 'ok', version: '1.0.0' }))
@@ -125,6 +129,10 @@ app.get('/health', async () => ({ status: 'ok', version: '1.0.0' }))
 // ─── Start ───────────────────────────────────────────────────────────────
 const start = async () => {
   try {
+    // Run plan expiry check on startup, then every 6 hours
+    expireOverduePlans().catch((err) => app.log.error(err))
+    setInterval(() => expireOverduePlans().catch((err) => app.log.error(err)), 6 * 60 * 60 * 1000)
+
     await app.listen({ port: Number(process.env.PORT) || 3001, host: '0.0.0.0' })
   } catch (err) {
     app.log.error(err)

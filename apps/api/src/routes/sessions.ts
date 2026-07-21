@@ -43,17 +43,31 @@ export async function sessionRoutes(app: FastifyInstance) {
     if (!org) return reply.code(401).send({ error: 'Invalid API key' })
 
     const { id } = req.params as { id: string }
+    const { include_messages } = req.query as { include_messages?: string }
+
     const session = await db.query.sessions.findFirst({
       where: (s, { eq, and }) => and(eq(s.id, id), eq(s.org_id, org.id))
     })
 
     if (!session) return reply.code(404).send({ error: 'Session not found' })
 
+    // Optionally include last 50 messages for chat history restore
+    let history: { role: string; content: string }[] = []
+    if (include_messages === 'true') {
+      const rows = await db.query.messages.findMany({
+        where: (m, { eq }) => eq(m.session_id, id),
+        orderBy: (m, { asc }) => [asc(m.created_at)],
+        limit: 50,
+      })
+      history = rows.map(r => ({ role: r.role, content: r.content }))
+    }
+
     return reply.send({
-      session_id: session.id,
-      status: session.status,
-      goal_text: session.goal_text,
-      activated_at: session.activated_at
+      session_id:   session.id,
+      status:       session.status,
+      goal_text:    session.goal_text,
+      activated_at: session.activated_at,
+      messages:     history,
     })
   })
 }

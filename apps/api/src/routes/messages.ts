@@ -1,18 +1,19 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, sql, asc } from 'drizzle-orm'
 import { db } from '../db'
-import { messages, sessions, usageCounters } from '../db/schema'
+import { messages, sessions, usageCounters, tours, tourSteps } from '../db/schema'
 import { validateApiKey } from '../lib/auth'
 import { generateAIResponse } from '../services/ai'
 import { rateLimit } from '../lib/redis'
 import { getLimits, withinLimit } from '../lib/plan-limits'
-import { currentMonth } from '../lib/utils'
+import { currentMonth, billingWindowKey } from '../lib/utils'
 import { clerkClient } from '@clerk/fastify'
 import { sendLimitWarningEmail } from '../lib/email'
 
 const MessageSchema = z.object({
-  content: z.string().min(1).max(2000)
+  content:          z.string().min(1).max(2000),
+  skip_tour_match:  z.boolean().optional(),  // set by SDK when user chose "Answer instead"
 })
 
 export async function messageRoutes(app: FastifyInstance) {
@@ -35,7 +36,7 @@ export async function messageRoutes(app: FastifyInstance) {
     if (!session) return reply.code(404).send({ error: 'Session not found' })
 
     // ─── Tier enforcement: monthly trigger limit ───────────────────────────
-    const month = currentMonth()
+    const month  = billingWindowKey(org.plan_expires_at, org.plan)
     const limits = getLimits(org.plan)
 
     // Upsert the usage_counters row so we always have a current row to read.
@@ -121,6 +122,52 @@ export async function messageRoutes(app: FastifyInstance) {
     reply.raw.setHeader('Cache-Control', 'no-cache')
     reply.raw.setHeader('Connection', 'keep-alive')
 
+    // ── AI-triggered tour matching ──────────────────────────────────────────
+    // Skipped if the user already declined a tour offer for this message.
+    if (!body.skip_tour_match) {
+    const publishedTours = await db.query.tours.findMany({
+      where: (t, { and, eq }) => and(eq(t.org_id, org.id), eq(t.status, 'published')),
+    })
+
+    const userLower = body.content.toLowerCase()
+    const matchedTour = publishedTours.find(tour => {
+      const nameLower = tour.name.toLowerCase()
+      const urlLower  = tour.page_url.toLowerCase().replace(/[/-]/g, ' ')
+      const nameWords = nameLower.split(/\s+/).filter(w => w.length > 3)
+      const urlWords  = urlLower.split(/\s+/).filter(w => w.length > 3)
+      return [...nameWords, ...urlWords].some(word => userLower.includes(word))
+    })
+
+    if (matchedTour) {
+      const steps = await db.query.tourSteps.findMany({
+        where: (s, { eq }) => eq(s.tour_id, matchedTour.id),
+        orderBy: (s, { asc }) => [asc(s.step_order)],
+      })
+
+      // Ask the user whether they want the tour or a text answer.
+      // The SDK renders two buttons; if they pick "tour" it launches it,
+      // if they pick "answer" it re-sends with skip_tour_match=true.
+      const offerMessage = `I can walk you through "${matchedTour.name}" as a guided tour, or I can answer you directly. Which would you prefer?`
+
+      for (const char of offerMessage) {
+        reply.raw.write(`data: ${JSON.stringify({ type: 'chunk', text: char })}\n\n`)
+      }
+      reply.raw.write(`data: ${JSON.stringify({
+        type:      'tour_offer',
+        tour_name: matchedTour.name,
+        tour:      { id: matchedTour.id, steps },
+      })}\n\n`)
+      reply.raw.write('data: [DONE]\n\n')
+      reply.raw.end()
+
+      await db.insert(messages).values([
+        { session_id: session.id, role: 'assistant', content: offerMessage },
+      ])
+      return
+    }
+    } // end skip_tour_match guard
+    // ───────────────────────────────────────────────────────────────────────
+
     try {
       const { stream, messageId } = await generateAIResponse({
         session,
@@ -129,14 +176,14 @@ export async function messageRoutes(app: FastifyInstance) {
       })
 
       for await (const chunk of stream) {
-        reply.raw.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`)
+        reply.raw.write(`data: ${JSON.stringify({ type: 'chunk', text: chunk })}\n\n`)
       }
 
-      reply.raw.write(`data: ${JSON.stringify({ done: true, message_id: messageId })}\n\n`)
+      reply.raw.write(`data: ${JSON.stringify({ type: 'done', message_id: messageId })}\n\n`)
     } catch (error) {
       req.log.error({ err: error }, 'message stream failed')
       reply.raw.write(`data: ${JSON.stringify({
-        error: true,
+        type: 'error',
         message: error instanceof Error ? error.message : 'AI request failed'
       })}\n\n`)
     } finally {

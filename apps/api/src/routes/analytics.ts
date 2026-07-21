@@ -43,4 +43,5 @@ export async function analyticsRoutes(app: FastifyInstance) {
       top_stuck_pages:    stuckPages,
     })
   })
+
 }

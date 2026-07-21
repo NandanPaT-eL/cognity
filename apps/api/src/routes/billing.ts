@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { eq, count } from 'drizzle-orm'
+import Stripe from 'stripe'
 import { db } from '../db'
 import { organizations } from '../db/schema'
 import { stripe, STRIPE_PRICE_IDS, SUBSCRIPTION_PLANS } from '../lib/stripe'
@@ -199,6 +200,22 @@ export async function webhookRoutes(app: FastifyInstance) {
             `checkout.session.completed: could not sync org (session ${session.id}, metadata ${JSON.stringify(session.metadata)})`
           )
         }
+
+        // Set plan_expires_at from subscription period end if available
+        if (session.mode === 'subscription' && session.subscription) {
+          try {
+            const sub       = await stripe.subscriptions.retrieve(session.subscription as string)
+            const periodEnd = sub.current_period_end
+            const orgId     = session.metadata?.org_id
+            if (orgId && periodEnd) {
+              await db.update(organizations)
+                .set({ plan_expires_at: new Date(periodEnd * 1000), updated_at: new Date() })
+                .where(eq(organizations.id, orgId))
+            }
+          } catch (err) {
+            app.log.warn(`checkout.session.completed: could not set plan_expires_at: ${String(err)}`)
+          }
+        }
       }
 
       // ── customer.subscription.deleted ─────────────────────────────────
@@ -249,6 +266,24 @@ export async function webhookRoutes(app: FastifyInstance) {
             app.log.error(`Failed to send payment-failed email: ${String(err)}`)
           }
         }
+      }
+
+      // ── invoice.paid ──────────────────────────────────────────────────
+      else if (event.type === 'invoice.paid') {
+        const invoice    = event.data.object as Stripe.Invoice
+        const customerId = invoice.customer as string
+        const subId      = invoice.subscription as string | null
+        const periodEnd  = invoice.lines?.data?.[0]?.period?.end
+
+        if (!customerId) return reply.send({ received: true })
+
+        const updatePayload: Record<string, unknown> = { updated_at: new Date() }
+        if (subId)     updatePayload.stripe_subscription_id = subId
+        if (periodEnd) updatePayload.plan_expires_at = new Date(periodEnd * 1000)
+
+        await db.update(organizations)
+          .set(updatePayload)
+          .where(eq(organizations.stripe_customer_id, customerId))
       }
 
       return reply.send({ received: true })

@@ -8,6 +8,7 @@ type Plan = 'starter' | 'growth' | 'lifetime'
 
 interface UpgradeModalProps {
   onClose: () => void
+  currentPlan?: string
 }
 
 const PLANS: Array<{
@@ -17,7 +18,6 @@ const PLANS: Array<{
   period: string
   description: string
   features: string[]
-  highlighted?: boolean
   badge?: string
 }> = [
   {
@@ -35,7 +35,6 @@ const PLANS: Array<{
     period:      'AUD / mo',
     description: 'Teams scaling activation and onboarding',
     features:    ['10,000 triggers / mo', '25,000 MAU', '100 documents', 'Custom branding'],
-    highlighted: false,
   },
   {
     key:         'lifetime',
@@ -44,14 +43,13 @@ const PLANS: Array<{
     period:      'one-time · beta only',
     description: 'Lock in Growth limits forever — limited to 50 teams',
     features:    ['10,000 triggers / mo', '25,000 MAU', '50 documents', 'Grandfathered onto Growth'],
-    highlighted: true,
     badge:       'Best value',
   },
 ]
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/v1'
 
-export function UpgradeModal({ onClose }: UpgradeModalProps) {
+export function UpgradeModal({ onClose, currentPlan }: UpgradeModalProps) {
   const { getToken } = useAuth()
   const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
   const [error, setError]             = useState<string | null>(null)
@@ -163,8 +161,9 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
 
         <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {PLANS.map((p) => {
-            const selected = loadingPlan === p.key
-            const dimmed   = isLoading && !selected
+            const selected      = loadingPlan === p.key
+            const dimmed        = isLoading && !selected
+            const isCurrentPlan = p.key === currentPlan
 
             return (
               <button
@@ -179,17 +178,17 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                   gap:            '14px',
                   padding:        '18px 20px',
                   borderRadius:   '18px',
-                  border:         p.highlighted
+                  border:         isCurrentPlan
                     ? '2px solid var(--purple)'
                     : '1.5px solid rgba(14,11,26,0.10)',
-                  background:     p.highlighted
+                  background:     isCurrentPlan
                     ? 'linear-gradient(180deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.03) 100%)'
                     : 'var(--canvas)',
                   cursor:         isLoading ? 'not-allowed' : 'pointer',
                   opacity:        dimmed ? 0.45 : 1,
                   textAlign:      'left',
                   transition:     'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
-                  boxShadow:      p.highlighted ? '0 8px 24px rgba(124,58,237,0.12)' : 'none',
+                  boxShadow:      isCurrentPlan ? '0 8px 24px rgba(124,58,237,0.12)' : 'none',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
@@ -265,10 +264,10 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                   paddingTop: '4px',
                   borderTop: '1px solid rgba(14,11,26,0.06)',
                 }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: p.highlighted ? 'var(--purple)' : 'var(--void)' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: isCurrentPlan ? 'var(--purple)' : 'var(--void)' }}>
                     {selected ? 'Opening Stripe Checkout…' : 'Continue to checkout'}
                   </span>
-                  <ArrowRight className="h-4 w-4" style={{ color: p.highlighted ? 'var(--purple)' : 'var(--text-muted)' }} />
+                  <ArrowRight className="h-4 w-4" style={{ color: isCurrentPlan ? 'var(--purple)' : 'var(--text-muted)' }} />
                 </div>
               </button>
             )

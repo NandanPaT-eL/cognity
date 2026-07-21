@@ -26,12 +26,14 @@ function UsageBar({
   icon: Icon,
   used,
   limit,
+  plan,
   onUpgrade,
 }: {
   label:     string
   icon:      React.ElementType
   used:      number
   limit:     number
+  plan:      string
   onUpgrade: () => void
 }) {
   // Unlimited plan (limit === -1) — show a special state
@@ -46,7 +48,9 @@ function UsageBar({
             <Icon className="h-4 w-4" style={{ color: 'var(--purple)' }} strokeWidth={1.8} />
             <span className="text-[13px] font-semibold" style={{ color: 'var(--void)' }}>{label}</span>
           </div>
-          <span className="text-[12px] font-medium" style={{ color: 'var(--text-muted)' }}>Unlimited</span>
+          <span className="text-[12px] font-medium" style={{ color: 'var(--text-muted)' }}>
+            {plan === 'free' ? 'Beta — unrestricted' : 'Unlimited'}
+          </span>
         </div>
         <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--mist)' }}>
           <div className="h-full rounded-full" style={{ width: '100%', background: 'var(--purple)', opacity: 0.3 }} />
@@ -326,6 +330,7 @@ export default function DashboardPage() {
               icon={Zap}
               used={usage.trigger_count}
               limit={usage.limits.monthly_triggers}
+              plan={usage.plan ?? 'free'}
               onUpgrade={() => setShowUpgrade(true)}
             />
             <UsageBar
@@ -333,6 +338,7 @@ export default function DashboardPage() {
               icon={Users}
               used={usage.mau_count}
               limit={usage.limits.mau}
+              plan={usage.plan ?? 'free'}
               onUpgrade={() => setShowUpgrade(true)}
             />
           </div>
@@ -401,7 +407,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Upgrade modal */}
-      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} currentPlan={usage?.plan ?? 'free'} />}
     </div>
   )
 }

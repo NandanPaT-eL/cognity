@@ -1,0 +1,1 @@
+ALTER TABLE "tour_steps" ADD COLUMN "page_url" text;

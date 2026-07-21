@@ -7,7 +7,7 @@ import { validateApiKey } from '../lib/auth'
 import { detectStuck } from '../services/idle'
 import { rateLimit } from '../lib/redis'
 import { getLimits, withinLimit } from '../lib/plan-limits'
-import { currentMonth } from '../lib/utils'
+import { billingWindowKey } from '../lib/utils'
 
 const EventSchema = z.object({
   event_type:   z.enum(['page_view', 'idle', 'activation', 'custom']),
@@ -54,7 +54,7 @@ export async function eventRoutes(app: FastifyInstance) {
 
     // ─── MAU enforcement on page_view ─────────────────────────────────────
     if (body.event_type === 'page_view') {
-      const month  = currentMonth()
+      const month  = billingWindowKey(org.plan_expires_at, org.plan)
       const limits = getLimits(org.plan)
 
       // Upsert mau_users — one row per (org, end_user, month)

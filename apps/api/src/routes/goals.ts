@@ -39,4 +39,13 @@ export async function goalRoutes(app: FastifyInstance) {
 
     return reply.send({ activation_goal: activationGoal })
   })
+
+  app.delete('/activation-goal', async (req, reply) => {
+    const org = await validateClerkJWT(req)
+    if (!org) return reply.code(401).send({ error: 'Unauthorized' })
+
+    await db.delete(activationGoals).where(eq(activationGoals.org_id, org.id))
+
+    return reply.send({ ok: true })
+  })
 }

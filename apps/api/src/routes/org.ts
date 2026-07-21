@@ -6,7 +6,7 @@ import { db } from '../db'
 import { organizations, usageCounters } from '../db/schema'
 import { validateClerkJWT } from '../lib/auth'
 import { getLimits } from '../lib/plan-limits'
-import { currentMonth } from '../lib/utils'
+import { billingWindowKey } from '../lib/utils'
 
 
 const OriginsSchema = z.object({
@@ -75,7 +75,7 @@ export async function orgRoutes(app: FastifyInstance) {
     const org = await validateClerkJWT(req)
     if (!org) return reply.code(401).send({ error: 'Unauthorized' })
 
-    const month  = currentMonth()
+    const month  = billingWindowKey(org.plan_expires_at, org.plan)
     const limits = getLimits(org.plan)
 
     // Upsert to ensure a row exists so the SELECT always returns data

@@ -103,3 +103,28 @@ export const mauUsers = pgTable(
     org_user_month_unique: uniqueIndex('mau_users_org_user_month_idx').on(t.org_id, t.end_user_id, t.month),
   })
 )
+
+// ─── Tours ───────────────────────────────────────────────────────────────────
+
+export const tours = pgTable('tours', {
+  id:           uuid('id').primaryKey().defaultRandom(),
+  org_id:       uuid('org_id').notNull().references(() => organizations.id),
+  name:         text('name').notNull(),
+  page_url:     text('page_url').notNull(),
+  status:       text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
+  trigger_type: text('trigger_type', { enum: ['page_load', 'manual'] }).notNull().default('page_load'),
+  created_at:   timestamp('created_at').notNull().defaultNow(),
+  updated_at:   timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const tourSteps = pgTable('tour_steps', {
+  id:          uuid('id').primaryKey().defaultRandom(),
+  tour_id:     uuid('tour_id').notNull().references(() => tours.id, { onDelete: 'cascade' }),
+  step_order:  integer('step_order').notNull(),
+  fingerprint: text('fingerprint').notNull(),  // JSON string of ElementFingerprint
+  title:       text('title').notNull(),
+  body_text:   text('body_text').notNull(),
+  position:    text('position', { enum: ['top', 'bottom', 'left', 'right'] }).notNull().default('bottom'),
+  page_url:    text('page_url'),  // nullable — step-level page override; inherits tour page_url if null
+  created_at:  timestamp('created_at').notNull().defaultNow(),
+})

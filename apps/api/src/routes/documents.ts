@@ -88,6 +88,25 @@ export async function documentRoutes(app: FastifyInstance) {
 
     return reply.send({ documents: docs })
   })
+
+  // DELETE /v1/documents/:id
+  app.delete('/documents/:id', async (req, reply) => {
+    const org = await validateClerkJWT(req)
+    if (!org) return reply.code(401).send({ error: 'Unauthorized' })
+
+    const { id } = req.params as { id: string }
+
+    // Verify ownership
+    const doc = await db.query.documents.findFirst({
+      where: (d, { and, eq }) => and(eq(d.id, id), eq(d.org_id, org.id))
+    })
+    if (!doc) return reply.code(404).send({ error: 'Document not found' })
+
+    await db.delete(documents).where(eq(documents.id, id))
+    // TODO: also delete vectors from Pinecone (optional for now)
+
+    return reply.send({ ok: true })
+  })
 }
 
 async function readDocumentPayload(req: FastifyRequest): Promise<{

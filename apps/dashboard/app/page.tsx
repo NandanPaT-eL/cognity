@@ -167,9 +167,17 @@ export default function LandingPage() {
 
       {/* ── Top Banner ──────────────────────────────────────────────── */}
       <div className="absolute top-0 inset-x-0 z-[60] py-2.5 text-center text-[13px] font-medium" style={{ background: 'var(--purple)', color: '#fff' }}>
-        <a href="#pricing" style={{ color: '#fff', textDecoration: 'none' }}>
-          $75 AUD one-time · Beta only →
-        </a>
+        <button
+          onClick={() => handlePlanClick('lifetime')}
+          disabled={buyingPlan === 'lifetime'}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#fff', fontSize: '13px', fontWeight: 500,
+            opacity: buyingPlan === 'lifetime' ? 0.7 : 1,
+          }}
+        >
+          {buyingPlan === 'lifetime' ? 'Redirecting to checkout…' : '$75 AUD one-time · Beta only →'}
+        </button>
       </div>
 
       {/* ── Floating nav ──────────────────────────────────────────────── */}

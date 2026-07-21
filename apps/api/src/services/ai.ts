@@ -43,7 +43,8 @@ export async function generateAIResponse({ session, userMessage, orgId }: Genera
 Goal: ${session.goal_text ?? 'Not stated'}${activationGoalLine}
 Docs:\n${context}
 History:\n${historyText}
-Rules: max 2 sentences. Give the single next action. Ask one question if unclear. Never say you're an AI.`
+Rules: max 2 sentences. Give the single next action. Ask one question if unclear. Never say you're an AI.
+If you cannot help with something, acknowledge what they wanted to do, apologize briefly, and suggest they try rephrasing or contact support.`
 
   const result = await generateChatContentStream(systemPrompt, userMessage)
 

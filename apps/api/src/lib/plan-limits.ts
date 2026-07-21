@@ -7,6 +7,8 @@ export interface PlanLimits {
   mau: number
   /** Max uploaded document sources (-1 = unlimited) */
   documents: number
+  /** Max published product tours (-1 = unlimited) */
+  tours: number
 }
 
 /**
@@ -24,22 +26,26 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     monthly_triggers: -1,   // unrestricted during beta
     mau:              -1,   // unrestricted during beta
     documents:        3,
+    tours:            -1,   // unrestricted during beta
   },
   beta: {
     // Beta plan: same quota as Starter but issued at no cost.
     monthly_triggers: 2_000,
     mau:              5_000,
     documents:        20,
+    tours:            10,
   },
   starter: {
     monthly_triggers: 2_000,
     mau:              5_000,
     documents:        20,
+    tours:            3,
   },
   growth: {
     monthly_triggers: 10_000,
     mau:              25_000,
     documents:        100,
+    tours:            10,
   },
   // Beta Lifetime Deal: promotional plan for first 50 beta purchasers.
   // After beta launch, holders are grandfathered onto Growth plan limits.
@@ -48,11 +54,13 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     monthly_triggers: 5_000,
     mau:              25_000,
     documents:        50,
+    tours:            -1,   // unlimited for lifetime holders
   },
   enterprise: {
     monthly_triggers: -1,
     mau:              -1,
     documents:        -1,
+    tours:            -1,
   },
 }
 

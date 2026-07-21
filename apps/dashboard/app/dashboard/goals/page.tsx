@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '@clerk/nextjs'
-import { CheckCircle, AlertCircle, Target } from 'lucide-react'
+import { CheckCircle, AlertCircle, Target, Trash2 } from 'lucide-react'
 import { LoadingDots, PageHeader } from '@/components/dashboard-ui'
 
 type ActivationGoal = {
@@ -66,6 +66,28 @@ export default function GoalsPage() {
     setStatus('idle')
   }
 
+  const handleDeleteGoal = async () => {
+    if (!confirm('Delete this activation goal?')) return
+    const token = await getToken()
+    try {
+      const res = await fetch(`${apiUrl}/activation-goal`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setMessage({ type: 'error', text: (data as { error?: string }).error ?? 'Failed to delete goal.' })
+        return
+      }
+      setGoal(null)
+      setEventName('')
+      setDescription('')
+      setMessage({ type: 'success', text: 'Goal deleted.' })
+    } catch {
+      setMessage({ type: 'error', text: 'Network error — could not delete goal.' })
+    }
+  }
+
   return (
     <div className="cog-page max-w-[560px]">
       <PageHeader
@@ -82,17 +104,30 @@ export default function GoalsPage() {
         <form onSubmit={handleSave} className="space-y-6 animate-fade-up">
           {goal && (
             <div
-              className="flex items-center gap-2.5 rounded-2xl px-5 py-4"
+              className="flex items-start gap-2.5 rounded-2xl px-5 py-4"
               style={{ background: 'var(--mist)', border: '1px solid rgba(124,58,237,0.16)' }}
             >
-              <Target className="h-4 w-4 shrink-0" style={{ color: 'var(--purple)' }} />
-              <p className="text-[12px] font-medium" style={{ color: 'var(--void)' }}>
-                Current goal:{' '}
-                <span className="font-mono" style={{ color: 'var(--purple)' }}>{goal.event_name}</span>
-                <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
-                  · saved {new Date(goal.created_at).toLocaleDateString()}
-                </span>
-              </p>
+              <Target className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--purple)' }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-medium" style={{ color: 'var(--void)' }}>
+                  Current goal:{' '}
+                  <span className="font-mono" style={{ color: 'var(--purple)' }}>{goal.event_name}</span>
+                  <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
+                    · saved {new Date(goal.created_at).toLocaleDateString()}
+                  </span>
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDeleteGoal}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#dc2626', fontSize: '12px', display: 'flex',
+                    alignItems: 'center', gap: '4px', marginTop: '8px', padding: 0,
+                  }}
+                >
+                  <Trash2 size={13} /> Delete goal
+                </button>
+              </div>
             </div>
           )}
 

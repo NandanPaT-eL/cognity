@@ -156,11 +156,17 @@ COGNITY_API_KEY=<paste your key from the dashboard>
       const token = await getToken()
       const res   = await fetch(`${apiUrl}/org/rotate-key`, {
         method:  'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       })
+      if (res.status === 401) {
+        throw new Error('Session expired — please refresh the page and try again.')
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error ?? `Request failed: ${res.status}`)
+        throw new Error((data as { error?: string }).error ?? `Request failed: ${res.status}`)
       }
       const { api_key } = await res.json()
       setOrg((prev) => prev ? { ...prev, api_key } : prev)
