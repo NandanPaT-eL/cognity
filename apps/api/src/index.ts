@@ -53,13 +53,12 @@ const dashboardOrigins = configuredOrigins.size > 0 ? configuredOrigins : defaul
 
 // ─── SDK static files (registered BEFORE clerkPlugin) ────────────────────
 // Serves packages/sdk/dist/* at /sdk/*
-// SDK_DIST_PATH env var overrides the relative path for flexibility.
-// Default: two levels up from apps/api/dist → project root → packages/sdk/dist
-const sdkDistPath = path.resolve(
-  process.env.SDK_DIST_PATH
-    ? path.resolve(process.cwd(), process.env.SDK_DIST_PATH)
-    : path.resolve(__dirname, '../../packages/sdk/dist')
-)
+// SDK_DIST_PATH env var overrides the path — set this on Render/Railway to
+// "packages/sdk/dist" (relative to project root / process.cwd()).
+// Fallback uses process.cwd() which is reliable across all deployment targets.
+const sdkDistPath = process.env.SDK_DIST_PATH
+  ? path.resolve(process.cwd(), process.env.SDK_DIST_PATH)
+  : path.resolve(process.cwd(), 'packages/sdk/dist')
 app.register(staticFiles, {
   root: sdkDistPath,
   prefix: '/sdk/',
@@ -125,6 +124,7 @@ app.register(publicTourRoutes,  { prefix: '/v1' })
 
 // ─── Health check ────────────────────────────────────────────────────────
 app.get('/health', async () => ({ status: 'ok', version: '1.0.0' }))
+app.get('/',       async () => ({ ok: true }))
 
 // ─── Start ───────────────────────────────────────────────────────────────
 const start = async () => {
