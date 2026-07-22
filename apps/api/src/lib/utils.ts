@@ -17,9 +17,9 @@ export function billingWindowKey(
   if (!planExpiresAt || plan === 'free' || plan === 'beta') {
     return new Date().toISOString().slice(0, 7)   // YYYY-MM calendar fallback
   }
-  // Period start = period end minus exactly 1 month
+  // Period start = period end minus exactly 1 month (UTC to avoid DST shift)
   const periodStart = new Date(planExpiresAt)
-  periodStart.setMonth(periodStart.getMonth() - 1)
+  periodStart.setUTCMonth(periodStart.getUTCMonth() - 1)
   return periodStart.toISOString().slice(0, 10)   // YYYY-MM-DD
 }
 

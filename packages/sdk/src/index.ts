@@ -45,6 +45,7 @@ async function boot(config: CognityConfig) {
 
   async function handleSend(userText: string, skipTourMatch = false) {
     let assistantBubbleAdded = false
+    let assistantText        = ''
 
     // Show typing indicator immediately
     widget.showTyping()
@@ -54,6 +55,7 @@ async function boot(config: CognityConfig) {
         widget.addMessage('assistant', '')
         assistantBubbleAdded = true
       }
+      assistantText += chunk
       widget.appendToLast(chunk)
     }
 
@@ -66,6 +68,15 @@ async function boot(config: CognityConfig) {
         (_messageId) => {},
         skipTourMatch
       )
+
+      // Keep local message cache in sync so cross-page history is always fresh
+      try {
+        const existing: { role: string; content: string }[] =
+          JSON.parse(sessionStorage.getItem('cog_msg_cache') ?? '[]')
+        existing.push({ role: 'user', content: userText })
+        if (assistantText) existing.push({ role: 'assistant', content: assistantText })
+        sessionStorage.setItem('cog_msg_cache', JSON.stringify(existing))
+      } catch {}
 
       if (result && 'limitReached' in result && result.limitReached) {
         widget.addMessage(

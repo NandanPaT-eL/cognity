@@ -7,7 +7,7 @@ export async function createOrResumeSession(config: CognityConfig): Promise<Sess
   const existingId = localStorage.getItem(SESSION_KEY)
 
   if (existingId) {
-    // Fetch session + message history in one call so the widget can restore the chat
+    // Try fetching history from API; fall back to sessionStorage cache if unavailable
     try {
       const res = await fetch(
         `${apiUrl}/v1/sessions/${existingId}?include_messages=true`,
@@ -15,16 +15,25 @@ export async function createOrResumeSession(config: CognityConfig): Promise<Sess
       )
       if (res.ok) {
         const data = await res.json()
+        const messages = data.messages ?? []
+        // Cache locally so next page navigation restores instantly without a network call
+        try { sessionStorage.setItem('cog_msg_cache', JSON.stringify(messages)) } catch {}
         return {
           session_id:      data.session_id,
           opening_message: '',
           status:          data.status,
-          messages:        data.messages ?? [],
+          messages,
         }
       }
     } catch {}
-    // Session fetch failed (network error) — keep using the stored ID optimistically
-    return { session_id: existingId, opening_message: '', status: 'active', messages: [] }
+    // Session fetch failed — restore from local cache so chat doesn't appear blank
+    const cached = sessionStorage.getItem('cog_msg_cache')
+    return {
+      session_id:      existingId,
+      opening_message: '',
+      status:          'active',
+      messages:        cached ? JSON.parse(cached) : [],
+    }
   }
 
   // No session yet — create one

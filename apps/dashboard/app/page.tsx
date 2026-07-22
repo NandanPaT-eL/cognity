@@ -54,15 +54,14 @@ const bento = [
 ]
 
 const comparison = {
-  old: ['Generic step-by-step tours', 'Same script for every user', 'Skipped in under 10 seconds', 'No idea where users get stuck', 'Weeks to set up with engineering'],
-  new: ['Real conversation from line one', 'Path built around each user\'s goal', 'Engages because it actually helps', 'Stuck-page analytics built in', 'One script tag, live in minutes'],
+  old: ['Users struggle to find value and churn', 'Every user is forced through the same generic onboarding experience, regardless of their goals', 'Friction goes unnoticed until users leave', 'Support tickets increase as users get stuck', 'Activation, retention, and conversion suffer', 'Weeks to set up with engineering'],
+  new: ['Users are guided to their first success based on their goals', 'Every onboarding journey starts with user intent and is personalised', 'Friction is detected in under 45 seconds and addressed in real time', 'Users reach value faster with less support', 'More signups become activated, successful users', 'No code required. Live in minutes.'],
 }
 
 const workflow = [
   { icon: BookOpen, label: 'Upload docs',       desc: 'Paste or upload your product documentation' },
   { icon: Target,   label: 'Set activation goal', desc: 'One event name defines success' },
   { icon: Code2,    label: 'Paste snippet',      desc: 'Single script tag in your app' },
-  { icon: Sparkles, label: 'Users activate',     desc: 'Conversations start automatically' },
 ]
 
 const faqs = [
@@ -75,7 +74,7 @@ const faqs = [
 const pricingPlans = [
   {
     name: 'Starter',
-    subtitle: 'For solo builders and small projects',
+    subtitle: 'For early-stage SaaS teams',
     price: '$39',
     period: 'AUD / mo',
     planKey: 'starter',
@@ -201,7 +200,7 @@ export default function LandingPage() {
           <nav className="hidden sm:flex items-center">
             {[
               ['Product', '#product'],
-              ['How it works', '#workflow'],
+              ['How it works', '#product'],
               ['Pricing', '#pricing'],
             ].map(([label, href]) => (
               <a key={label} href={href} className="cog-nav-link px-3 py-1.5 rounded-full">
@@ -246,7 +245,7 @@ export default function LandingPage() {
               >
                 <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--purple)' }} />
                 <span className="text-[12px] font-semibold" style={{ color: '#000000' }}>
-                  For the first 50 teams
+                  Beta — limited spots
                 </span>
               </div>
               <p className="text-[12px] mt-1.5 leading-relaxed"
@@ -258,7 +257,7 @@ export default function LandingPage() {
                 className="text-[44px] sm:text-[52px] lg:text-[56px] font-extrabold tracking-[-0.04em] leading-[1.04]"
                 style={{ color: '#000000' }}
               >
-                Turn every signup into an achieved user.
+                Turn every signup into an activated user.
               </h1>
               <p className="mt-6 text-[17px] leading-relaxed max-w-[480px]" style={{ color: '#000000' }}>
                 Stop losing users before they see value with the first Al-powered activation platform that understands user intent and guides users to success.
@@ -348,12 +347,12 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--purple)' }}>Why switch</span>
             <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em] text-white">
-              Product tours vs. Cognity
+              The old way vs. Cognity
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
             <div className="rounded-[24px] p-8" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
-              <p className="text-[12px] font-bold uppercase tracking-wider mb-6" style={{ color: 'rgba(255,255,255,0.28)' }}>Static tours</p>
+              <p className="text-[12px] font-bold uppercase tracking-wider mb-6" style={{ color: 'rgba(255,255,255,0.28)' }}>Without Cognity</p>
               <ul className="space-y-4">
                 {comparison.old.map(item => (
                   <li key={item} className="flex items-start gap-3 text-[14px]" style={{ color: 'rgba(255,255,255,0.38)' }}>
@@ -383,10 +382,11 @@ export default function LandingPage() {
         <div className="text-center mb-16">
           <span className="cog-eyebrow">How it works</span>
           <h2 className="mt-3 text-[36px] font-extrabold tracking-[-0.03em]" style={{ color: 'var(--void)' }}>
-            Four steps. Five minutes.
+            Three steps. Three minutes.
           </h2>
+          <p className="mt-3 text-[15px]" style={{ color: 'var(--text-soft)' }}>Simple to install.</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+        <div className="grid sm:grid-cols-3 gap-6 relative">
           <div aria-hidden className="hidden lg:block absolute top-10 left-[12%] right-[12%] h-px" style={{ background: 'rgba(124,58,237,0.15)' }} />
           {workflow.map(({ icon: Icon, label, desc }, i) => (
             <div key={label} className="relative text-center">
@@ -646,7 +646,7 @@ export default function LandingPage() {
               Stop losing users before they see value.
             </h2>
             <p className="mt-4 text-[16px] max-w-md mx-auto" style={{ color: 'var(--text-soft)' }}>
-              Set up in minutes. No credit card. No engineering sprint.
+              Set up in minutes. No engineering sprint.
             </p>
             <Link href="/auth/sign-up" className="cog-btn-primary mt-8 text-[15px] gap-2 inline-flex">
               Get started
